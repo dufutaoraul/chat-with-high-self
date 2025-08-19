@@ -1,12 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    appDir: true,
-  },
-  // 确保只使用App Router
+  // 移除过时的 appDir 配置，Next.js 14 默认支持 App Router
   trailingSlash: false,
-  // 优化构建
   swcMinify: true,
+  // 修复 Edge Runtime 兼容性问题
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/supabase-js']
+  }
 }
 
 module.exports = nextConfig

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '../../../../utils/supabase/server'
 
+// 指定使用 Node.js runtime 而不是 Edge Runtime
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     const { message, userId } = await request.json()
