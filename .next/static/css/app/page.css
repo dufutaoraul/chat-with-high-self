@@ -1,0 +1,727 @@
+/*!***************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[7].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[7].use[3]!./app/page.module.css ***!
+  \***************************************************************************************************************************************************************************************************************************************************************/
+/* 应用容器样式 */
+.page_appContainer__N4LJA {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #000011 0%, #0a0a1a 30%, #1a0a2e 70%, #0f0f23 100%);
+  color: white;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 导航栏 */
+.page_navbar__k3RMs {
+  background: rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(20px);
+          backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.page_navContent__ZA8P_ {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+}
+
+.page_logo__ikIZE {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.page_logoIcon__FOO5m {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}
+
+.page_logoText__M1jdM {
+  background: linear-gradient(135deg, #87ceeb 0%, #9370db 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page_navMenu__kF1tH {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.page_navItem__qmtZO {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.page_navItem__qmtZO:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.page_navItem__qmtZO.page_active__9fwfh {
+  color: white;
+  background: linear-gradient(135deg, #4c6ef5 0%, #7c3aed 100%);
+  box-shadow: 0 4px 15px rgba(76, 110, 245, 0.3);
+}
+
+.page_signOutButton__9TvTQ {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 1rem;
+}
+
+.page_signOutButton__9TvTQ:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* 主要内容区域 */
+.page_mainContent__TeHAh {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 80px);
+}
+
+.page_contentSection__c0mv3 {
+  background: rgba(255, 255, 255, 0.05);
+  -webkit-backdrop-filter: blur(20px);
+          backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.page_stars__uP2RU {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(4px 4px at 20px 30px, #ffffff, transparent),
+    radial-gradient(3px 3px at 40px 70px, rgba(135, 206, 250, 1), transparent),
+    radial-gradient(2px 2px at 90px 40px, #ffffff, transparent),
+    radial-gradient(3px 3px at 130px 80px, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(4px 4px at 160px 30px, rgba(173, 216, 230, 0.9), transparent),
+    radial-gradient(2px 2px at 200px 100px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 250px 150px, rgba(147, 112, 219, 0.7), transparent),
+    radial-gradient(3px 3px at 300px 50px, rgba(255, 182, 193, 0.8), transparent);
+  background-repeat: repeat;
+  background-size: 350px 250px;
+  animation: page_sparkle__nYjKX 25s linear infinite;
+  z-index: 1;
+}
+
+.page_twinkling__zxU_i {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(4px 4px at 50px 50px, rgba(255, 255, 255, 1), transparent),
+    radial-gradient(3px 3px at 100px 100px, rgba(135, 206, 250, 0.9), transparent),
+    radial-gradient(2px 2px at 150px 150px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(5px 5px at 200px 200px, rgba(147, 112, 219, 0.6), transparent);
+  background-size: 450px 450px;
+  animation: page_twinkle__2vdvJ 6s ease-in-out infinite alternate;
+  z-index: 2;
+}
+
+.page_clouds__Q1cLv {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(ellipse 1200px 500px at 50% 0%, rgba(25, 25, 112, 0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 900px 400px at 20% 100%, rgba(72, 61, 139, 0.2) 0%, transparent 60%),
+    radial-gradient(ellipse 800px 300px at 80% 50%, rgba(138, 43, 226, 0.15) 0%, transparent 50%);
+  animation: page_cloudMove__bDW_U 45s ease-in-out infinite;
+  z-index: 3;
+}
+
+.page_nebula__eeRTW {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(ellipse 1000px 700px at 30% 20%, rgba(138, 43, 226, 0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 1200px 900px at 70% 80%, rgba(75, 0, 130, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 800px 500px at 90% 10%, rgba(147, 112, 219, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 600px 400px at 10% 90%, rgba(255, 20, 147, 0.1) 0%, transparent 50%);
+  animation: page_nebulaMove__tK9Xe 70s ease-in-out infinite;
+  z-index: 4;
+}
+
+@keyframes page_sparkle__nYjKX {
+  from { transform: translateX(0); }
+  to { transform: translateX(-300px); }
+}
+
+@keyframes page_twinkle__2vdvJ {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+@keyframes page_cloudMove__bDW_U {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-8px) translateY(15px); }
+}
+
+@keyframes page_nebulaMove__tK9Xe {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(2deg) scale(1.05); }
+}
+
+/* 主要内容 */
+.page_main__nw1Wk {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+}
+
+.page_hero__7KFOs {
+  color: white;
+}
+
+/* 炫酷Logo动画 */
+.page_logoContainer__m2mQ4 {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 3rem;
+}
+
+.page_logo__ikIZE {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: page_logoFloat__ZXKAe 4s ease-in-out infinite;
+}
+
+.page_logoCore__AJULO {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #4c6ef5 0%, #7c3aed 50%, #ec4899 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  box-shadow: 
+    0 20px 40px rgba(76, 110, 245, 0.4),
+    0 0 0 4px rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 3;
+}
+
+.page_logoRing1__XcZTd, .page_logoRing2__wk1X7, .page_logoRing3__m_j6f {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 2px solid;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.page_logoRing1__XcZTd {
+  width: 100px;
+  height: 100px;
+  border-color: rgba(135, 206, 250, 0.6);
+  animation: page_ring1Rotate__u8j9R 8s linear infinite;
+}
+
+.page_logoRing2__wk1X7 {
+  width: 110px;
+  height: 110px;
+  border-color: rgba(147, 112, 219, 0.4);
+  animation: page_ring2Rotate__jZSwl 12s linear infinite reverse;
+}
+
+.page_logoRing3__m_j6f {
+  width: 120px;
+  height: 120px;
+  border-color: rgba(255, 105, 180, 0.3);
+  animation: page_ring3Rotate__Rnv8g 16s linear infinite;
+}
+
+.page_logoGlow__97G84 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(76, 110, 245, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: page_glowPulse__IkHkE 3s ease-in-out infinite alternate;
+  z-index: 1;
+}
+
+@keyframes page_logoFloat__ZXKAe {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+@keyframes page_ring1Rotate__u8j9R {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes page_ring2Rotate__jZSwl {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+@keyframes page_ring3Rotate__Rnv8g {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes page_glowPulse__IkHkE {
+  from { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.page_title__po7na {
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #87ceeb 0%, #9370db 50%, #ff69b4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+  animation: page_titleGlow__VaYfO 2s ease-in-out infinite alternate;
+}
+
+@keyframes page_titleGlow__VaYfO {
+  from { filter: brightness(1); }
+  to { filter: brightness(1.2); }
+}
+
+.page_subtitle__YBgxm {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.page_description__lvaOp {
+  color: #cbd5e0;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 3rem;
+}
+
+.page_authButtons__63l1H {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.page_userWelcome__SbN1c {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: page_welcomeGlow__gLBS6 2s ease-in-out infinite alternate;
+}
+
+@keyframes page_welcomeGlow__gLBS6 {
+  from { box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
+  to { box-shadow: 0 0 20px rgba(255, 255, 255, 0.4); }
+}
+
+.page_authButton__tNiNq {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #4c6ef5 0%, #7c3aed 50%, #ec4899 100%);
+  color: white;
+  text-decoration: none;
+  padding: 1rem 2rem;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 25px rgba(76, 110, 245, 0.3);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  z-index: 1000;
+  pointer-events: auto;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+
+.page_authButton__tNiNq::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.2), 
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.page_authButton__tNiNq:hover::before {
+  left: 100%;
+}
+
+.page_authButton__tNiNq:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 35px rgba(76, 110, 245, 0.4);
+}
+
+.page_secondaryButton__0Pzex {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  padding: 1rem 2rem;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+}
+
+.page_secondaryButton__0Pzex:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+.page_buttonIcon__VPInc {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+.page_features__GdcOS {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.page_feature__LruQD {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #cbd5e0;
+  font-weight: 500;
+}
+
+.page_featureIcon__UHR_A {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 0 5px rgba(135, 206, 250, 0.5));
+}
+
+.page_loading__4WMny {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at center, #0f0f23 0%, #000000 100%);
+  color: white;
+}
+
+.page_spinner__1BdMn {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: page_spin__OXxwq 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes page_spin__OXxwq {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .page_title__po7na {
+    font-size: 2.5rem;
+  }
+  
+  .page_subtitle__YBgxm {
+    font-size: 1.3rem;
+  }
+  
+  .page_description__lvaOp {
+    font-size: 1rem;
+  }
+  
+  .page_logo__ikIZE {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+  }
+  
+  .page_logoRipple__DBmmK {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .page_authButtons__63l1H {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .page_authButton__tNiNq,
+  .page_secondaryButton__0Pzex {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+  
+  .page_features__GdcOS {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+/*!***********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/starry-background.css ***!
+  \***********************************************************************************************************************************************************************************************************************************************************************/
+/* 深邃黑色星空背景 */
+.starry-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* 主背景 - 深邃黑色渐变 */
+.deep-space {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(120, 219, 255, 0.06) 0%, transparent 50%),
+    linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #000000 50%, #0a0a0a 75%, #000000 100%);
+}
+
+/* 星星层1 - 大星星 */
+.stars-large {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(4px 4px at 100px 50px, #ffffff, transparent),
+    radial-gradient(3px 3px at 200px 150px, #87ceeb, transparent),
+    radial-gradient(5px 5px at 300px 100px, #ffffff, transparent),
+    radial-gradient(4px 4px at 400px 200px, #dda0dd, transparent),
+    radial-gradient(3px 3px at 500px 80px, #ffffff, transparent),
+    radial-gradient(6px 6px at 600px 180px, #87ceeb, transparent),
+    radial-gradient(4px 4px at 700px 120px, #ffffff, transparent),
+    radial-gradient(5px 5px at 800px 60px, #ffd700, transparent);
+  background-repeat: repeat;
+  background-size: 900px 300px;
+  animation: twinkle-large 8s ease-in-out infinite alternate;
+}
+
+/* 星星层2 - 中等星星 */
+.stars-medium {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(2px 2px at 50px 80px, #ffffff, transparent),
+    radial-gradient(3px 3px at 150px 40px, #87ceeb, transparent),
+    radial-gradient(2px 2px at 250px 120px, #ffffff, transparent),
+    radial-gradient(3px 3px at 350px 180px, #dda0dd, transparent),
+    radial-gradient(2px 2px at 450px 60px, #ffffff, transparent),
+    radial-gradient(3px 3px at 550px 140px, #87ceeb, transparent),
+    radial-gradient(2px 2px at 650px 100px, #ffffff, transparent),
+    radial-gradient(3px 3px at 750px 160px, #ffd700, transparent);
+  background-repeat: repeat;
+  background-size: 800px 250px;
+  animation: twinkle-medium 6s ease-in-out infinite alternate 1s;
+}
+
+/* 星星层3 - 小星星 */
+.stars-small {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(1px 1px at 30px 30px, #ffffff, transparent),
+    radial-gradient(1px 1px at 80px 90px, #87ceeb, transparent),
+    radial-gradient(1px 1px at 130px 60px, #ffffff, transparent),
+    radial-gradient(1px 1px at 180px 140px, #dda0dd, transparent),
+    radial-gradient(1px 1px at 230px 20px, #ffffff, transparent),
+    radial-gradient(1px 1px at 280px 110px, #87ceeb, transparent),
+    radial-gradient(1px 1px at 330px 170px, #ffffff, transparent),
+    radial-gradient(1px 1px at 380px 50px, #ffd700, transparent);
+  background-repeat: repeat;
+  background-size: 400px 200px;
+  animation: sparkle-small 4s ease-in-out infinite alternate 2s;
+}
+
+/* 流星 */
+.shooting-stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.shooting-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ffffff;
+}
+
+.shooting-star:nth-child(1) {
+  top: 20%;
+  left: -10px;
+  animation: shoot1 3s linear infinite;
+}
+
+.shooting-star:nth-child(2) {
+  top: 60%;
+  left: -10px;
+  animation: shoot2 4s linear infinite 2s;
+}
+
+.shooting-star:nth-child(3) {
+  top: 80%;
+  left: -10px;
+  animation: shoot3 5s linear infinite 4s;
+}
+
+/* 星云效果 */
+.nebula-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(ellipse 800px 400px at 30% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 300px at 70% 80%, rgba(75, 0, 130, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 400px 200px at 90% 10%, rgba(255, 20, 147, 0.06) 0%, transparent 50%);
+  animation: nebula-drift 20s ease-in-out infinite alternate;
+}
+
+/* 动画定义 */
+@keyframes twinkle-large {
+  0% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.8; transform: scale(1); }
+}
+
+@keyframes twinkle-medium {
+  0% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.6; transform: scale(1); }
+}
+
+@keyframes sparkle-small {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+
+@keyframes shoot1 {
+  0% { transform: translateX(-10px) translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100vw) translateY(-200px); opacity: 0; }
+}
+
+@keyframes shoot2 {
+  0% { transform: translateX(-10px) translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100vw) translateY(-150px); opacity: 0; }
+}
+
+@keyframes shoot3 {
+  0% { transform: translateX(-10px) translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100vw) translateY(-100px); opacity: 0; }
+}
+
+@keyframes nebula-drift {
+  0% { transform: translateX(0) translateY(0) rotate(0deg); }
+  50% { transform: translateX(20px) translateY(-10px) rotate(1deg); }
+  100% { transform: translateX(0) translateY(0) rotate(0deg); }
+}

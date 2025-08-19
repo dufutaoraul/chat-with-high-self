@@ -1,0 +1,394 @@
+/* 增强的首页动画效果 */
+
+/* 炫酷Logo动画 */
+.logoContainer {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 3rem;
+}
+
+.logo {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: logoFloat 4s ease-in-out infinite;
+}
+
+.logoCore {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #4c6ef5 0%, #7c3aed 50%, #ec4899 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  box-shadow: 
+    0 20px 40px rgba(76, 110, 245, 0.4),
+    0 0 0 4px rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 3;
+}
+
+.logoRing1, .logoRing2, .logoRing3 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 2px solid;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.logoRing1 {
+  width: 100px;
+  height: 100px;
+  border-color: rgba(135, 206, 250, 0.6);
+  animation: ring1Rotate 8s linear infinite;
+}
+
+.logoRing2 {
+  width: 110px;
+  height: 110px;
+  border-color: rgba(147, 112, 219, 0.4);
+  animation: ring2Rotate 12s linear infinite reverse;
+}
+
+.logoRing3 {
+  width: 120px;
+  height: 120px;
+  border-color: rgba(255, 105, 180, 0.3);
+  animation: ring3Rotate 16s linear infinite;
+}
+
+.logoGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(76, 110, 245, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: glowPulse 3s ease-in-out infinite alternate;
+  z-index: 1;
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+@keyframes ring1Rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes ring2Rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+@keyframes ring3Rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes glowPulse {
+  from { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* 标题动画 */
+.titleContainer {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #87ceeb 0%, #9370db 50%, #ff69b4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+  animation: titleGlow 3s ease-in-out infinite alternate;
+  position: relative;
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 1rem;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.5s forwards;
+}
+
+.titleUnderline {
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4c6ef5, #7c3aed, #ec4899);
+  margin: 0 auto;
+  animation: underlineExpand 2s ease-out 1s forwards;
+}
+
+@keyframes titleGlow {
+  from { 
+    filter: brightness(1) drop-shadow(0 0 10px rgba(135, 206, 250, 0.3)); 
+  }
+  to { 
+    filter: brightness(1.2) drop-shadow(0 0 20px rgba(135, 206, 250, 0.6)); 
+  }
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes underlineExpand {
+  from { width: 0; }
+  to { width: 200px; }
+}
+
+/* 炫酷按钮 */
+.primaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #4c6ef5 0%, #7c3aed 50%, #ec4899 100%);
+  color: white;
+  text-decoration: none;
+  padding: 1.2rem 2.5rem;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 15px 35px rgba(76, 110, 245, 0.3);
+  position: relative;
+  overflow: hidden;
+  margin-right: 1rem;
+}
+
+.primaryButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.primaryButton:hover::before {
+  left: 100%;
+}
+
+.primaryButton:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 20px 45px rgba(76, 110, 245, 0.5);
+}
+
+.buttonGlow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  border-radius: inherit;
+  filter: blur(15px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.primaryButton:hover .buttonGlow {
+  opacity: 0.7;
+}
+
+/* 动态功能展示 */
+.featuresContainer {
+  margin-top: 4rem;
+}
+
+.features {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+  transform: scale(0.95);
+  min-width: 200px;
+}
+
+.feature.active {
+  opacity: 1;
+  transform: scale(1);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(76, 110, 245, 0.2);
+}
+
+.featureIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 10px rgba(135, 206, 250, 0.5));
+  animation: iconFloat 3s ease-in-out infinite;
+}
+
+.featureContent h3 {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.featureContent p {
+  color: #cbd5e0;
+  font-size: 0.9rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* 功能指示器 */
+.featureIndicators {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  background: linear-gradient(135deg, #4c6ef5, #7c3aed);
+  box-shadow: 0 0 15px rgba(76, 110, 245, 0.6);
+  transform: scale(1.2);
+}
+
+/* 浮动装饰元素 */
+.floatingElements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.floatingElement1, .floatingElement2, .floatingElement3, .floatingElement4 {
+  position: absolute;
+  font-size: 2rem;
+  opacity: 0.6;
+  animation: float 6s ease-in-out infinite;
+}
+
+.floatingElement1 {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.floatingElement2 {
+  top: 60%;
+  right: 15%;
+  animation-delay: 1.5s;
+}
+
+.floatingElement3 {
+  top: 30%;
+  right: 20%;
+  animation-delay: 3s;
+}
+
+.floatingElement4 {
+  bottom: 20%;
+  left: 20%;
+  animation-delay: 4.5s;
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg); 
+    opacity: 0.6; 
+  }
+  50% { 
+    transform: translateY(-20px) rotate(180deg); 
+    opacity: 0.8; 
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .logo {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .logoCore {
+    width: 70px;
+    height: 70px;
+    font-size: 32px;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+  }
+  
+  .features {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .feature {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .primaryButton {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+}

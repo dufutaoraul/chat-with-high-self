@@ -1,0 +1,184 @@
+/* 深邃黑色星空背景 */
+.starry-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* 主背景 - 深邃黑色渐变 */
+.deep-space {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(ellipse at 20% 50%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 119, 198, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(120, 219, 255, 0.06) 0%, transparent 50%),
+    linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #000000 50%, #0a0a0a 75%, #000000 100%);
+}
+
+/* 星星层1 - 大星星 */
+.stars-large {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(4px 4px at 100px 50px, #ffffff, transparent),
+    radial-gradient(3px 3px at 200px 150px, #87ceeb, transparent),
+    radial-gradient(5px 5px at 300px 100px, #ffffff, transparent),
+    radial-gradient(4px 4px at 400px 200px, #dda0dd, transparent),
+    radial-gradient(3px 3px at 500px 80px, #ffffff, transparent),
+    radial-gradient(6px 6px at 600px 180px, #87ceeb, transparent),
+    radial-gradient(4px 4px at 700px 120px, #ffffff, transparent),
+    radial-gradient(5px 5px at 800px 60px, #ffd700, transparent);
+  background-repeat: repeat;
+  background-size: 900px 300px;
+  animation: twinkle-large 8s ease-in-out infinite alternate;
+}
+
+/* 星星层2 - 中等星星 */
+.stars-medium {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(2px 2px at 50px 80px, #ffffff, transparent),
+    radial-gradient(3px 3px at 150px 40px, #87ceeb, transparent),
+    radial-gradient(2px 2px at 250px 120px, #ffffff, transparent),
+    radial-gradient(3px 3px at 350px 180px, #dda0dd, transparent),
+    radial-gradient(2px 2px at 450px 60px, #ffffff, transparent),
+    radial-gradient(3px 3px at 550px 140px, #87ceeb, transparent),
+    radial-gradient(2px 2px at 650px 100px, #ffffff, transparent),
+    radial-gradient(3px 3px at 750px 160px, #ffd700, transparent);
+  background-repeat: repeat;
+  background-size: 800px 250px;
+  animation: twinkle-medium 6s ease-in-out infinite alternate 1s;
+}
+
+/* 星星层3 - 小星星 */
+.stars-small {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(1px 1px at 30px 30px, #ffffff, transparent),
+    radial-gradient(1px 1px at 80px 90px, #87ceeb, transparent),
+    radial-gradient(1px 1px at 130px 60px, #ffffff, transparent),
+    radial-gradient(1px 1px at 180px 140px, #dda0dd, transparent),
+    radial-gradient(1px 1px at 230px 20px, #ffffff, transparent),
+    radial-gradient(1px 1px at 280px 110px, #87ceeb, transparent),
+    radial-gradient(1px 1px at 330px 170px, #ffffff, transparent),
+    radial-gradient(1px 1px at 380px 50px, #ffd700, transparent);
+  background-repeat: repeat;
+  background-size: 400px 200px;
+  animation: sparkle-small 4s ease-in-out infinite alternate 2s;
+}
+
+/* 流星 */
+.shooting-stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.shooting-star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #ffffff;
+}
+
+.shooting-star:nth-child(1) {
+  top: 20%;
+  left: -10px;
+  animation: shoot1 3s linear infinite;
+}
+
+.shooting-star:nth-child(2) {
+  top: 60%;
+  left: -10px;
+  animation: shoot2 4s linear infinite 2s;
+}
+
+.shooting-star:nth-child(3) {
+  top: 80%;
+  left: -10px;
+  animation: shoot3 5s linear infinite 4s;
+}
+
+/* 星云效果 */
+.nebula-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(ellipse 800px 400px at 30% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 300px at 70% 80%, rgba(75, 0, 130, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 400px 200px at 90% 10%, rgba(255, 20, 147, 0.06) 0%, transparent 50%);
+  animation: nebula-drift 20s ease-in-out infinite alternate;
+}
+
+/* 动画定义 */
+@keyframes twinkle-large {
+  0% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.8; transform: scale(1); }
+}
+
+@keyframes twinkle-medium {
+  0% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.6; transform: scale(1); }
+}
+
+@keyframes sparkle-small {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+
+@keyframes shoot1 {
+  0% { transform: translateX(-10px) translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100vw) translateY(-200px); opacity: 0; }
+}
+
+@keyframes shoot2 {
+  0% { transform: translateX(-10px) translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100vw) translateY(-150px); opacity: 0; }
+}
+
+@keyframes shoot3 {
+  0% { transform: translateX(-10px) translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100vw) translateY(-100px); opacity: 0; }
+}
+
+@keyframes nebula-drift {
+  0% { transform: translateX(0) translateY(0) rotate(0deg); }
+  50% { transform: translateX(20px) translateY(-10px) rotate(1deg); }
+  100% { transform: translateX(0) translateY(0) rotate(0deg); }
+}
