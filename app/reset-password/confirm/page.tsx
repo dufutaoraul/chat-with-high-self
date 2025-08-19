@@ -1,18 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '../../../utils/supabase/client'
 import styles from '../reset-password.module.css'
 
-export default function ResetPasswordConfirm() {
+function ResetPasswordConfirmContent() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
-  const searchParams = useSearchParams()
   const supabase = createClient()
 
   useEffect(() => {
@@ -106,9 +105,31 @@ export default function ResetPasswordConfirm() {
             </button>
           </div>
         </div>
+    </div>
+  )
+}
+
+export default function ResetPasswordConfirm() {
+  return (
+    <Suspense fallback={
+      <div className={styles.container}>
+        <div className={styles.backgroundAnimation}>
+          <div className={styles.stars}></div>
+          <div className={styles.twinkling}></div>
+          <div className={styles.clouds}></div>
+        </div>
+        <div className={styles.content}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>加载中...</h1>
+            <p className={styles.subtitle}>正在准备密码重置页面</p>
+          </div>
+        </div>
       </div>
-    )
-  }
+    }>
+      <ResetPasswordConfirmContent />
+    </Suspense>
+  )
+}
 
   return (
     <div className={styles.container}>
