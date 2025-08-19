@@ -28,24 +28,14 @@ export default function HomePage() {
     }
   }
 
-  const handleStartChat = async () => {
-    setLoading(true)
-    try {
-      // 实时检查用户状态，避免使用缓存的状态
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (user) {
-        // 已登录用户直接进入聊天界面
-        router.push('/chat')
-      } else {
-        // 未登录用户跳转到登录页面
-        router.push('/signin')
-      }
-    } catch (error) {
-      console.error('检查用户状态失败:', error)
+  const handleStartChat = () => {
+    // 直接使用已经检查过的用户状态，避免重复检查造成闪烁
+    if (user) {
+      // 已登录用户直接进入聊天界面
+      router.push('/chat')
+    } else {
+      // 未登录用户跳转到登录页面
       router.push('/signin')
-    } finally {
-      setLoading(false)
     }
   }
 
