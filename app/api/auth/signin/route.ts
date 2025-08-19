@@ -49,8 +49,21 @@ export async function POST(request: NextRequest) {
     })
 
     if (error) {
+      // 将英文错误信息转换为中文
+      let chineseMessage = '登录失败，请重试'
+      
+      if (error.message.includes('Invalid login credentials')) {
+        chineseMessage = '邮箱或密码错误，请检查后重试'
+      } else if (error.message.includes('Email not confirmed')) {
+        chineseMessage = '请先验证您的邮箱地址'
+      } else if (error.message.includes('Too many requests')) {
+        chineseMessage = '登录尝试过于频繁，请稍后再试'
+      } else if (error.message.includes('User not found')) {
+        chineseMessage = '用户不存在，请检查邮箱地址'
+      }
+      
       return NextResponse.json(
-        { success: false, message: error.message },
+        { success: false, message: chineseMessage },
         { status: 400 }
       )
     }

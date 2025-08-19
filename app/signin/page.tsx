@@ -97,6 +97,11 @@ export default function SignIn() {
               onChange={(e) => setPassword(e.target.value)}
               required 
             />
+            <div className={styles.forgotPassword}>
+              <Link href="/reset-password" className={styles.forgotLink}>
+                忘记密码？
+              </Link>
+            </div>
           </div>
 
           <button 
