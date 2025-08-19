@@ -89,11 +89,11 @@ export async function GET(request: NextRequest) {
     }
 
     const freeTokensLimit = 100 // 1元免费试用
-    const freeTokensUsed = profile.free_tokens_used || 0
+    const freeTokensUsed = profile?.free_tokens_used || 0
     const freeTokensRemaining = Math.max(0, freeTokensLimit - freeTokensUsed)
 
     return NextResponse.json({
-      tokenBalance: profile.token_balance || 0,
+      tokenBalance: profile?.token_balance || 0,
       freeTokensUsed,
       freeTokensLimit,
       freeTokensRemaining
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (getError) {
+    if (getError || !profile) {
       return NextResponse.json({ error: '获取用户档案失败' }, { status: 500 })
     }
 
