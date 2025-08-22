@@ -105,31 +105,9 @@ function ResetPasswordConfirmContent() {
             </button>
           </div>
         </div>
-    </div>
-  )
-}
-
-export default function ResetPasswordConfirm() {
-  return (
-    <Suspense fallback={
-      <div className={styles.container}>
-        <div className={styles.backgroundAnimation}>
-          <div className={styles.stars}></div>
-          <div className={styles.twinkling}></div>
-          <div className={styles.clouds}></div>
-        </div>
-        <div className={styles.content}>
-          <div className={styles.header}>
-            <h1 className={styles.title}>加载中...</h1>
-            <p className={styles.subtitle}>正在准备密码重置页面</p>
-          </div>
-        </div>
       </div>
-    }>
-      <ResetPasswordConfirmContent />
-    </Suspense>
-  )
-}
+    )
+  }
 
   return (
     <div className={styles.container}>
@@ -194,5 +172,27 @@ export default function ResetPasswordConfirm() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordConfirm() {
+  return (
+    <Suspense fallback={
+      <div className={styles.container}>
+        <div className={styles.backgroundAnimation}>
+          <div className={styles.stars}></div>
+          <div className={styles.twinkling}></div>
+          <div className={styles.clouds}></div>
+        </div>
+        <div className={styles.content}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>加载中...</h1>
+            <p className={styles.subtitle}>正在准备密码重置页面</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <ResetPasswordConfirmContent />
+    </Suspense>
   )
 }

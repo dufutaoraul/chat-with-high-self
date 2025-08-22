@@ -27,11 +27,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 检查用户Token余额
+    // 检查用户Token余额 - 使用profiles表
     const { data: profile } = await supabase
-      .from('user_profiles')
+      .from('profiles')
       .select('token_balance, free_tokens_used, free_tokens_limit')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .single()
 
     const totalTokens = (profile?.token_balance || 0) + 
@@ -83,16 +83,16 @@ export async function POST(request: NextRequest) {
       // 优先扣除付费Token
       const newBalance = Math.max(0, profile.token_balance - tokensUsed)
       await supabase
-        .from('user_profiles')
+        .from('profiles')
         .update({ token_balance: newBalance })
-        .eq('user_id', userId)
+        .eq('id', userId)
     } else {
       // 扣除免费Token
       const newFreeUsed = (profile?.free_tokens_used || 0) + tokensUsed
       await supabase
-        .from('user_profiles')
+        .from('profiles')
         .update({ free_tokens_used: newFreeUsed })
-        .eq('user_id', userId)
+        .eq('id', userId)
     }
 
     // 保存对话记录
