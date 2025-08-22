@@ -1,1 +1,7 @@
-{}
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/chat/page": "app/chat/page.js",
+  "/page": "app/page.js",
+  "/test-email/page": "app/test-email/page.js",
+  "/reset-password/page": "app/reset-password/page.js"
+}

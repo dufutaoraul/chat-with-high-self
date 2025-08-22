@@ -2,17 +2,15 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { createClient } from '../../utils/supabase/client'
-import styles from './reset-password.module.css'
+import styles from '../reset-password/reset-password.module.css'
 
-export default function ResetPassword() {
+export default function SimpleResetPassword() {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -22,30 +20,20 @@ export default function ResetPassword() {
     setLoading(true)
 
     try {
-      console.log('发送重置邮件到:', email)
-      console.log('当前域名:', window.location.origin)
-      console.log('重定向URL:', `${window.location.origin}/reset-password/confirm`)
-      
-      const { error, data } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password/confirm`,
-      })
-      
-      console.log('重置密码完整结果:', { error, data })
-      console.log('Supabase配置:', {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      })
+      // 不指定redirectTo，使用Supabase默认配置
+      const { error } = await supabase.auth.resetPasswordForEmail(email)
+
+      console.log('简化重置密码结果:', { error })
 
       if (error) {
         throw error
       }
 
       setEmailSent(true)
-      setMessage('重置密码的邮件已发送到您的邮箱，请查收并按照邮件中的指示操作。')
+      setMessage('重置密码的邮件已发送到您的邮箱。请查收邮件并按照指示操作。')
     } catch (error: any) {
       console.error('发送重置邮件失败:', error)
       
-      // 转换为中文错误信息
       let chineseMessage = '发送重置邮件失败，请重试'
       
       if (error.message.includes('User not found')) {
@@ -64,7 +52,6 @@ export default function ResetPassword() {
 
   return (
     <div className={styles.container}>
-      {/* 星空背景动画 */}
       <div className={styles.backgroundAnimation}>
         <div className={styles.stars}></div>
         <div className={styles.twinkling}></div>
@@ -73,7 +60,7 @@ export default function ResetPassword() {
 
       <div className={styles.content}>
         <div className={styles.header}>
-          <h1 className={styles.title}>重置密码</h1>
+          <h1 className={styles.title}>重置密码（简化版）</h1>
           <p className={styles.subtitle}>
             {emailSent ? '邮件已发送' : '输入您的邮箱地址，我们将发送重置密码的链接'}
           </p>
@@ -125,11 +112,11 @@ export default function ResetPassword() {
             )}
             
             <div className={styles.instructions}>
-              <h3>接下来的步骤：</h3>
+              <h3>注意事项：</h3>
               <ol>
                 <li>检查您的邮箱（包括垃圾邮件文件夹）</li>
-                <li>点击邮件中的重置密码链接</li>
-                <li>设置新密码</li>
+                <li>点击邮件中的重置链接</li>
+                <li>在弹出的页面中设置新密码</li>
                 <li>使用新密码登录</li>
               </ol>
             </div>
@@ -138,17 +125,6 @@ export default function ResetPassword() {
               <Link href="/signin" className={styles.link}>
                 返回登录
               </Link>
-              <span className={styles.separator}>|</span>
-              <button 
-                onClick={() => {
-                  setEmailSent(false)
-                  setMessage(null)
-                  setError(null)
-                }}
-                className={styles.resendLink}
-              >
-                重新发送邮件
-              </button>
             </div>
           </div>
         )}
