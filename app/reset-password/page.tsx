@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '../../utils/supabase/client'
+import { createClient } from '@supabase/supabase-js'
 import styles from './reset-password.module.css'
 
 export default function ResetPassword() {
@@ -13,7 +13,12 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
+  
+  // 使用支付数据库发送邮件（它有邮件配置）
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_PAYMENT_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_PAYMENT_SUPABASE_ANON_KEY!
+  )
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
