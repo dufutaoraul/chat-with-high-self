@@ -13,6 +13,9 @@
       "Bash(curl:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "D:\\utils"
+    ]
   }
 }

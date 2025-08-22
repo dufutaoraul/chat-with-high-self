@@ -4,8 +4,6 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { createClient as createPaymentClient } from '@supabase/supabase-js';
-import { syncPaymentToTokens } from '../../../../../../../utils/sync/payment-sync';
 
 // 签名验证函数
 const verifySign = (params: URLSearchParams, key: string): boolean => {
@@ -55,21 +53,23 @@ export async function GET(req: NextRequest) {
         return new Response('success', { status: 200 });
     }
     
-    // 支付相关操作使用支付数据库
-    const paymentSupabase = createPaymentClient(
-        process.env.NEXT_PUBLIC_PAYMENT_SUPABASE_URL!,
-        process.env.PAYMENT_SUPABASE_SERVICE_ROLE_KEY!,
+    // 使用主数据库
+    const cookieStore = cookies();
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
         {
-            auth: {
-                autoRefreshToken: false,
-                persistSession: false
-            }
+            cookies: {
+                get(name: string) {
+                    return cookieStore.get(name)?.value;
+                },
+            },
         }
     );
 
     try {
-        // 3. 从支付数据库查找订单
-        const { data: transaction, error: findError } = await paymentSupabase
+        // 3. 从数据库查找订单
+        const { data: transaction, error: findError } = await supabase
             .from('zpay_transactions')
             .select('*')
             .eq('out_trade_no', out_trade_no)
@@ -92,8 +92,8 @@ export async function GET(req: NextRequest) {
             return new Response('error', { status: 400 });
         }
 
-        // 6. 更新支付数据库中的订单状态
-        const { error: updateError } = await paymentSupabase
+        // 6. 更新订单状态
+        const { error: updateError } = await supabase
             .from('zpay_transactions')
             .update({ 
                 trade_status: 'SUCCESS',
@@ -108,16 +108,10 @@ export async function GET(req: NextRequest) {
 
         console.log(`Webhook: 订单 ${out_trade_no} 成功处理并更新状态!`);
         
-        // 7. 同步Token到用户账户
-        const syncResult = await syncPaymentToTokens(out_trade_no);
-        if (syncResult.success) {
-            console.log(`✅ 订单 ${out_trade_no} Token同步成功，充值 ${syncResult.tokensAdded} Tokens`);
-        } else {
-            console.error(`❌ 订单 ${out_trade_no} Token同步失败: ${syncResult.error}`);
-            // 即使同步失败，也返回成功，避免Z-Pay重复通知
-        }
+        // 7. TODO: 在这里添加Token同步逻辑
+        console.log(`✅ 订单 ${out_trade_no} 处理完成`)
 
-        // 8. 向 Z-Pay 返回成功标识
+        // 7. 向 Z-Pay 返回成功标识
         return new Response('success', { status: 200 });
 
     } catch (error) {
