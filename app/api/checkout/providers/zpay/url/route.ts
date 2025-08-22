@@ -4,6 +4,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { createClient as createPaymentClient } from '@supabase/supabase-js';
 
 // 签名生成函数保持不变
 const generateSign = (params: Record<string, any>, key: string): string => {
@@ -21,7 +22,8 @@ export async function POST(req: Request) {
     try {
         const cookieStore = cookies()
 
-        const supabase = createServerClient(
+        // 用户认证使用主数据库
+        const userSupabase = createServerClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
           {
@@ -32,8 +34,20 @@ export async function POST(req: Request) {
             },
           }
         )
+
+        // 支付记录使用支付数据库
+        const paymentSupabase = createPaymentClient(
+          process.env.NEXT_PUBLIC_PAYMENT_SUPABASE_URL!,
+          process.env.PAYMENT_SUPABASE_SERVICE_ROLE_KEY!,
+          {
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false
+            }
+          }
+        )
         
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await userSupabase.auth.getUser();
 
         if (userError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -57,7 +71,8 @@ export async function POST(req: Request) {
 
         const outTradeNo = `zpay_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-        const { error: insertError } = await supabase
+        // 将订单记录保存到支付数据库
+        const { error: insertError } = await paymentSupabase
             .from('zpay_transactions')
             .insert({
                 user_id: userId,
