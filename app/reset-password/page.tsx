@@ -26,9 +26,8 @@ export default function ResetPassword() {
       console.log('当前域名:', window.location.origin)
       console.log('重定向URL:', `${window.location.origin}/reset-password/confirm`)
       
-      const { error, data } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password/confirm`,
-      })
+      // 暂时移除redirectTo参数，使用Supabase默认配置
+      const { error, data } = await supabase.auth.resetPasswordForEmail(email)
       
       console.log('重置密码完整结果:', { error, data })
       console.log('Supabase配置:', {
