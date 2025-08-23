@@ -64,32 +64,16 @@ export default function PricingPage() {
         }
 
         try {
-            // 调用支付API
-            const response = await fetch('/api/checkout/providers/zpay/url', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: `${tokenPackage.name} - ${tokenPackage.tokens.toLocaleString()} Tokens`,
-                    money: tokenPackage.price,
-                    type: 'alipay',
-                    param: { 
-                        productId: tokenPackage.id,
-                        tokens: tokenPackage.tokens,
-                        userId: user.id
-                    },
-                }),
-            });
+            // 直接跳转到支付系统
+            const paymentUrl = `https://payment.dufutao.asia?` + new URLSearchParams({
+                productId: tokenPackage.id,
+                name: `${tokenPackage.name} - ${tokenPackage.tokens.toLocaleString()} Tokens`,
+                price: tokenPackage.price.toString(),
+                tokens: tokenPackage.tokens.toString(),
+                userId: user.id
+            }).toString();
 
-            const data = await response.json();
-
-            if (response.ok && data.paymentUrl) {
-                window.location.href = data.paymentUrl;
-            } else {
-                console.error('支付创建失败:', data.error);
-                alert(`创建订单失败: ${data.error}`);
-            }
+            window.location.href = paymentUrl;
         } catch (error) {
             console.error('支付错误:', error);
             alert('发生未知错误，请稍后再试。');

@@ -29,44 +29,17 @@ export default function PaymentModal({ isOpen, onClose, userBalance, onPaymentSu
   const handlePurchase = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/checkout/providers/zpay/url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          productId: `tokens_${selectedPackage}`,
-          amount: packages[selectedPackage].price,
-          tokens: packages[selectedPackage].tokens
-        })
-      })
+      // 直接跳转到支付系统
+      const paymentUrl = `https://payment.dufutao.asia?` + new URLSearchParams({
+        productId: `tokens_${selectedPackage}`,
+        name: packages[selectedPackage].name,
+        price: packages[selectedPackage].price.toString(),
+        tokens: packages[selectedPackage].tokens.toString(),
+        userId: 'user_id' // 需要从用户状态获取
+      }).toString();
 
-      const data = await response.json()
-      
-      if (data.paymentUrl) {
-        // 跳转到支付页面
-        window.open(data.paymentUrl, '_blank')
-        
-        // 监听支付结果
-        const checkPayment = setInterval(async () => {
-          const statusResponse = await fetch(`/api/checkout/status/${data.orderId}`, {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          })
-          const statusData = await statusResponse.json()
-          
-          if (statusData.status === 'completed') {
-            clearInterval(checkPayment)
-            onPaymentSuccess()
-            onClose()
-          }
-        }, 3000)
-        
-        // 10分钟后停止检查
-        setTimeout(() => clearInterval(checkPayment), 600000)
-      }
+      window.location.href = paymentUrl;
+      onClose();
     } catch (error) {
       console.error('支付失败:', error)
       alert('支付失败，请重试')
