@@ -13,8 +13,18 @@ export default function HomePage() {
   const supabase = createClient()
 
   useEffect(() => {
+    // 检查是否是密码重置的访问
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash
+      if (hash.includes('access_token=') && hash.includes('type=recovery')) {
+        // 将用户重定向到密码重置确认页面，并保留hash参数
+        router.push(`/reset-password/confirm${hash}`)
+        return
+      }
+    }
+    
     checkUser()
-  }, [])
+  }, [router])
 
   const checkUser = async () => {
     try {
