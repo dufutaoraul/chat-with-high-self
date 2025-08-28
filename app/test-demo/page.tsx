@@ -22,17 +22,34 @@ export default function TestDemo() {
   const testChatAPI = async () => {
     try {
       console.log('Testing chat API...')
+      // 先检查用户是否已登录
+      const authResponse = await fetch('/api/auth/user', {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      if (!authResponse.ok) {
+        setTestResults(prev => ({
+          ...prev,
+          chat: { error: '用户未登录，请先登录后再测试' }
+        }))
+        return
+      }
+
+      const userData = await authResponse.json()
+
       const response = await fetch('/api/chat/conversation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           message: '你好，这是一个测试消息',
-          userId: 'test-user-id'
+          userId: userData.user?.id || 'test-user-id'
         })
       })
-      
+
       const result = await response.json()
       setTestResults(prev => ({
         ...prev,
@@ -49,18 +66,35 @@ export default function TestDemo() {
   const testPaymentAPI = async () => {
     try {
       console.log('Testing payment API...')
+      // 先检查用户是否已登录
+      const authResponse = await fetch('/api/auth/user', {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      if (!authResponse.ok) {
+        setTestResults(prev => ({
+          ...prev,
+          payment: { error: '用户未登录，请先登录后再测试' }
+        }))
+        return
+      }
+
+      const userData = await authResponse.json()
+
       const response = await fetch('/api/checkout/providers/zpay/url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           amount: 10,
-          userId: 'test-user-id',
+          userId: userData.user?.id || 'test-user-id',
           packageType: 'basic'
         })
       })
-      
+
       const result = await response.json()
       setTestResults(prev => ({
         ...prev,
@@ -77,13 +111,25 @@ export default function TestDemo() {
   const testTokenAPI = async () => {
     try {
       console.log('Testing token API...')
+      // 先检查用户是否已登录
+      const authResponse = await fetch('/api/auth/user', {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      if (!authResponse.ok) {
+        setTestResults(prev => ({
+          ...prev,
+          tokens: { error: '用户未登录，请先登录后再测试' }
+        }))
+        return
+      }
+
       const response = await fetch('/api/user/tokens', {
         method: 'GET',
-        headers: {
-          'Authorization': 'Bearer test-token'
-        }
+        credentials: 'include'
       })
-      
+
       const result = await response.json()
       setTestResults(prev => ({
         ...prev,
@@ -169,10 +215,9 @@ export default function TestDemo() {
       <div className={styles.testSection}>
         <h2>📋 调试信息</h2>
         <div className={styles.debugInfo}>
-          <p><strong>当前环境:</strong> {process.env.NODE_ENV}</p>
-          <p><strong>Supabase URL:</strong> {process.env.NEXT_PUBLIC_SUPABASE_URL}</p>
-          <p><strong>App URL:</strong> {process.env.NEXT_PUBLIC_APP_URL}</p>
-          <p><strong>时间戳:</strong> {new Date().toISOString()}</p>
+          <p><strong>当前环境:</strong> {process.env.NODE_ENV || 'development'}</p>
+          <p><strong>Supabase URL:</strong> {process.env.NEXT_PUBLIC_SUPABASE_URL || 'Not configured'}</p>
+          <p><strong>App URL:</strong> {process.env.NEXT_PUBLIC_APP_URL || 'Not configured'}</p>
         </div>
       </div>
 

@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const { message, userId } = await request.json()
 
-    if (!message || !userId) {
+    if (!message) {
       return NextResponse.json(
         { error: '缺少必要参数' },
         { status: 400 }
@@ -20,18 +20,21 @@ export async function POST(request: NextRequest) {
 
     // 验证用户身份
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user || user.id !== userId) {
+    if (authError || !user) {
       return NextResponse.json(
         { error: '用户身份验证失败' },
         { status: 401 }
       )
     }
 
+    // 使用实际登录用户的ID，而不是请求中的userId
+    const actualUserId = user.id
+
     // 检查用户Token余额 - 使用profiles表
     const { data: profile } = await supabase
       .from('profiles')
       .select('token_balance, free_tokens_used, free_tokens_limit')
-      .eq('id', userId)
+      .eq('id', actualUserId)
       .single()
 
     const totalTokens = (profile?.token_balance || 0) + 
@@ -85,21 +88,21 @@ export async function POST(request: NextRequest) {
       await supabase
         .from('profiles')
         .update({ token_balance: newBalance })
-        .eq('id', userId)
+        .eq('id', actualUserId)
     } else {
       // 扣除免费Token
       const newFreeUsed = (profile?.free_tokens_used || 0) + tokensUsed
       await supabase
         .from('profiles')
         .update({ free_tokens_used: newFreeUsed })
-        .eq('id', userId)
+        .eq('id', actualUserId)
     }
 
     // 保存对话记录
     await supabase
       .from('conversations')
       .insert({
-        user_id: userId,
+        user_id: actualUserId,
         user_message: message,
         ai_response: reply,
         tokens_used: tokensUsed,

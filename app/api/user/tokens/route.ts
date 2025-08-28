@@ -1,24 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '../../../../utils/supabase/admin'
+import { createClient } from '../../../../utils/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
-    const authorization = request.headers.get('authorization')
+    const supabase = createClient()
 
-    if (!authorization) {
-      return NextResponse.json({ error: '未授权访问' }, { status: 401 })
-    }
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    const token = authorization.replace('Bearer ', '')
-    
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-    
     if (authError || !user) {
-      return NextResponse.json({ error: '无效的访问令牌' }, { status: 401 })
+      return NextResponse.json({ error: '无效的用户令牌' }, { status: 401 })
     }
 
     // 获取用户Token余额 - 先尝试profiles表，如果失败则尝试user_profiles表
-    let { data: profile, error: profileError } = await supabaseAdmin
+    let { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('token_balance, free_tokens_used')
       .eq('id', user.id)
@@ -26,12 +20,12 @@ export async function GET(request: NextRequest) {
 
     // 如果profiles表不存在，尝试user_profiles表
     if (profileError) {
-      const { data: userProfile, error: userProfileError } = await supabaseAdmin
+      const { data: userProfile, error: userProfileError } = await supabase
         .from('user_profiles')
         .select('token_balance, free_tokens_used')
         .eq('user_id', user.id)
         .single()
-      
+
       if (!userProfileError) {
         profile = userProfile
         profileError = null
@@ -40,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     if (profileError) {
       // 如果用户档案不存在，创建一个（优先使用profiles表）
-      const { data: newProfile, error: createError } = await supabaseAdmin
+      const { data: newProfile, error: createError } = await supabase
         .from('profiles')
         .insert({
           id: user.id,
@@ -53,7 +47,7 @@ export async function GET(request: NextRequest) {
 
       // 如果profiles表创建失败，尝试user_profiles表
       if (createError) {
-        const { data: newUserProfile, error: createUserError } = await supabaseAdmin
+        const { data: newUserProfile, error: createUserError } = await supabase
           .from('user_profiles')
           .insert({
             user_id: user.id,
@@ -107,27 +101,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { tokensUsed } = await request.json()
-    const authorization = request.headers.get('authorization')
+    const supabase = createClient()
 
-    if (!authorization) {
-      return NextResponse.json({ error: '未授权访问' }, { status: 401 })
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: '无效的用户令牌' }, { status: 401 })
     }
+
+    const { tokensUsed } = await request.json()
 
     if (!tokensUsed || tokensUsed <= 0) {
       return NextResponse.json({ error: '无效的Token消耗量' }, { status: 400 })
     }
 
-    const token = authorization.replace('Bearer ', '')
-    
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: '无效的访问令牌' }, { status: 401 })
-    }
-
     // 获取用户当前Token状态
-    const { data: profile, error: getError } = await supabaseAdmin
+    const { data: profile, error: getError } = await supabase
       .from('profiles')
       .select('token_balance, free_tokens_used')
       .eq('id', user.id)
@@ -169,7 +158,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 更新用户Token状态
-    const { error: updateError } = await supabaseAdmin
+    const { error: updateError } = await supabase
       .from('profiles')
       .update({
         token_balance: newBalance,
