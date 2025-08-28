@@ -248,16 +248,49 @@
   text-decoration: underline;
 }
 
+/* 记住邮箱复选框样式 */
+.checkboxGroup {
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  transition: color 0.3s ease;
+}
+
+.checkboxLabel:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  accent-color: #4f46e5;
+  cursor: pointer;
+}
+
+.checkboxText {
+  user-select: none;
+}
+
 @media (max-width: 768px) {
   .content {
     margin: 1rem;
     padding: 1.5rem;
   }
-  
+
   .title {
     font-size: 2rem;
   }
-  
+
   .subtitle {
     font-size: 1rem;
   }

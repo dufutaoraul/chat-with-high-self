@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../utils/supabase/client'
 import styles from './page.module.css'
@@ -12,6 +12,18 @@ export default function HomePage() {
   const router = useRouter()
   const supabase = createClient()
 
+  const checkUser = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+    } catch (error) {
+      console.error('检查用户状态失败:', error)
+      setUser(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [supabase])
+
   useEffect(() => {
     // 检查是否是密码重置的访问
     if (typeof window !== 'undefined') {
@@ -22,21 +34,9 @@ export default function HomePage() {
         return
       }
     }
-    
-    checkUser()
-  }, [router])
 
-  const checkUser = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-    } catch (error) {
-      console.error('检查用户状态失败:', error)
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }
+    checkUser()
+  }, [router, checkUser])
 
   const handleStartChat = () => {
     // 直接使用已经检查过的用户状态，避免重复检查造成闪烁

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '../../utils/supabase/client'
 import styles from './reset-password.module.css'
 
 export default function ResetPassword() {
@@ -13,12 +13,9 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const router = useRouter()
-  
-  // 使用支付数据库发送邮件（它有邮件配置）
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_PAYMENT_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_PAYMENT_SUPABASE_ANON_KEY!
-  )
+
+  // 使用主数据库（用户认证数据库）
+  const supabase = createClient()
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,24 +25,18 @@ export default function ResetPassword() {
 
     try {
       console.log('发送重置邮件到:', email)
-      console.log('当前域名:', window.location.origin)
-      console.log('重定向URL:', `${window.location.origin}/reset-password/confirm`)
-      
-      // 明确指定redirectTo参数，确保重定向到正确的域名
-      // 优先使用www域名，如果当前是非www域名，则自动切换
-      const origin = window.location.origin.includes('www.') 
-        ? window.location.origin 
-        : window.location.origin.replace('://', '://www.')
-      
+
+      // 使用环境变量中配置的应用URL，确保重定向到正确的域名
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.dufutao.asia'
+      const redirectUrl = `${appUrl}/reset-password/confirm`
+
+      console.log('重定向URL:', redirectUrl)
+
       const { error, data } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${origin}/reset-password/confirm`
+        redirectTo: redirectUrl
       })
-      
-      console.log('重置密码完整结果:', { error, data })
-      console.log('Supabase配置:', {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-      })
+
+      console.log('重置密码结果:', { error: error?.message, success: !error })
 
       if (error) {
         throw error

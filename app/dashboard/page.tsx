@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -13,11 +13,26 @@ export default function Dashboard() {
   const supabase = createClient()
   const router = useRouter()
 
-  useEffect(() => {
-    checkUser()
-  }, [])
+  const fetchTokenInfo = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
 
-  const checkUser = async () => {
+      const response = await fetch('/api/user/tokens', {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setTokenInfo(data)
+      }
+    } catch (error) {
+      console.error('获取Token信息失败:', error)
+    }
+  }, [supabase])
+
+  const checkUser = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -32,26 +47,11 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router, supabase, fetchTokenInfo])
 
-  const fetchTokenInfo = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      const response = await fetch('/api/user/tokens', {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`
-        }
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setTokenInfo(data)
-      }
-    } catch (error) {
-      console.error('获取Token信息失败:', error)
-    }
-  }
+  useEffect(() => {
+    checkUser()
+  }, [checkUser])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()

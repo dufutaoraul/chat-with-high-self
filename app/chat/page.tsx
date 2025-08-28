@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '../../utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import styles from './chat.module.css'
@@ -24,19 +24,28 @@ export default function ChatPage() {
   const supabase = createClient()
   const router = useRouter()
 
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const checkUser = async () => {
+  const fetchTokenBalance = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch('/api/user/tokens', {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setTokenBalance(data.tokenBalance || 0)
+      }
+    } catch (error) {
+      console.error('获取Token余额失败:', error)
+    }
+  }, [supabase])
+
+  const checkUser = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -45,7 +54,7 @@ export default function ChatPage() {
       }
       setUser(user)
       await fetchTokenBalance()
-      
+
       // 添加欢迎消息
       if (messages.length === 0) {
         setMessages([{
@@ -61,24 +70,15 @@ export default function ChatPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router, supabase, fetchTokenBalance, messages.length])
 
-  const fetchTokenBalance = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const response = await fetch('/api/user/tokens', {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setTokenBalance(data.tokenBalance || 0)
-      }
-    } catch (error) {
-      console.error('获取Token余额失败:', error)
-    }
-  }
+  useEffect(() => {
+    checkUser()
+  }, [checkUser])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || sending) return

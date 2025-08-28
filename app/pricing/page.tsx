@@ -170,8 +170,8 @@ export default function PricingPage() {
                         <div className={styles.featureItem}>
                             <span className={styles.featureIcon}>🧠</span>
                             <div>
-                                <h4>Gemini 2.5 Pro</h4>
-                                <p>Google最先进的AI模型</p>
+                                <h4>Gemini 2.0 Flash</h4>
+                                <p>Google最新的高速AI模型</p>
                             </div>
                         </div>
                         <div className={styles.featureItem}>

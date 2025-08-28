@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '../../utils/supabase/client'
@@ -9,10 +9,20 @@ import styles from './signin.module.css'
 export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberEmail, setRememberEmail] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+
+  // 组件加载时从localStorage读取记住的邮箱
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail')
+    if (savedEmail) {
+      setEmail(savedEmail)
+      setRememberEmail(true)
+    }
+  }, [])
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,6 +30,9 @@ export default function SignIn() {
     setLoading(true)
 
     try {
+      console.log('=== FRONTEND LOGIN DEBUG ===')
+      console.log('Sending login request for email:', email)
+
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: {
@@ -31,10 +44,20 @@ export default function SignIn() {
         })
       })
 
+      console.log('Login response status:', response.status)
       const result = await response.json()
+      console.log('Login response data:', result)
 
       if (!result.success) {
+        console.log('Login failed with message:', result.message)
         throw new Error(result.message)
+      }
+
+      // 登录成功，处理记住邮箱
+      if (rememberEmail) {
+        localStorage.setItem('rememberedEmail', email)
+      } else {
+        localStorage.removeItem('rememberedEmail')
       }
 
       // 登录成功，强制跳转到仪表板
@@ -104,7 +127,19 @@ export default function SignIn() {
             </div>
           </div>
 
-          <button 
+          <div className={styles.checkboxGroup}>
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={rememberEmail}
+                onChange={(e) => setRememberEmail(e.target.checked)}
+                className={styles.checkbox}
+              />
+              <span className={styles.checkboxText}>记住邮箱</span>
+            </label>
+          </div>
+
+          <button
             type="submit"
             className={styles.submitButton}
             disabled={loading}

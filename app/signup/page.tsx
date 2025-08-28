@@ -19,6 +19,8 @@ export default function SignUp() {
     e.preventDefault()
     setError(null)
 
+    console.log('注册表单提交开始', { email, password: '***', agreedToTerms })
+
     if (!agreedToTerms) {
       setError('请同意服务条款和隐私政策')
       return
@@ -32,29 +34,60 @@ export default function SignUp() {
     setLoading(true)
 
     try {
+      // 使用环境变量中配置的应用URL，确保重定向到正确的域名
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.dufutao.asia'
+      const callbackUrl = `${appUrl}/auth/callback?next=/dashboard`
+      console.log('使用的重定向URL:', callbackUrl)
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: callbackUrl,
         },
       })
 
+      console.log('Supabase注册响应:', { data, error })
+
       if (error) {
-        throw error
+        console.log('Supabase registration error:', error)
+
+        // 处理不同类型的错误
+        if (error.message.includes('User already registered')) {
+          throw new Error('该邮箱已注册，请直接登录或使用其他邮箱')
+        } else if (error.message.includes('Invalid email')) {
+          throw new Error('邮箱格式不正确，请检查后重试')
+        } else if (error.message.includes('Password')) {
+          throw new Error('密码不符合要求，请确保至少6个字符')
+        } else {
+          throw new Error(error.message || '注册失败，请稍后再试')
+        }
       }
 
       // 检查是否需要邮箱验证
+      console.log('Registration data details:', {
+        user: data?.user ? 'Present' : 'Missing',
+        userId: data?.user?.id,
+        userEmail: data?.user?.email,
+        identitiesLength: data?.user?.identities?.length,
+        emailConfirmed: data?.user?.email_confirmed_at
+      })
+
       if (data?.user?.identities?.length === 0) {
         // 已注册但未确认邮箱
+        console.log('User already registered but email not confirmed')
         setError('该邮箱已注册，请检查邮箱或直接登录')
         return
       }
 
       // 注册成功
       if (data.user) {
+        console.log('Registration successful, redirecting to success page')
         // 重定向到成功页面或登录页面
         router.push('/signup-success')
+      } else {
+        console.log('Registration completed but no user data returned')
+        setError('注册过程中出现异常，请稍后再试')
       }
     } catch (error: any) {
       console.error('注册失败:', error)
