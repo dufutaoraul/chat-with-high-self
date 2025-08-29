@@ -1,266 +1,529 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { createClient } from '../../utils/supabase/client'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import styles from './chat.module.css'
+import { createClient } from '../../utils/supabase/client'
 
-interface Message {
+interface ChatMessage {
   id: string
-  content: string
-  isUser: boolean
-  timestamp: Date
+  message: string
+  response: string
+  created_at: string
+  conversation_number: number
+}
+
+interface UserConversations {
+  total_conversations: number
+  free_conversations_used: number
+  paid_conversations: number
+  remaining_conversations: number
 }
 
 export default function ChatPage() {
   const [user, setUser] = useState<any>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [inputMessage, setInputMessage] = useState('')
+  const [conversations, setConversations] = useState<UserConversations | null>(null)
   const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
-  const [tokenBalance, setTokenBalance] = useState(0)
-  const [showProfile, setShowProfile] = useState(false)
+  const [chatLoading, setChatLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([])
+  const [showPayment, setShowPayment] = useState(false)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const supabase = createClient()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    checkAuth()
+  }, [])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [chatHistory])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const fetchTokenBalance = useCallback(async () => {
+  const checkAuth = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const response = await fetch('/api/user/tokens', {
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setTokenBalance(data.tokenBalance || 0)
-      }
-    } catch (error) {
-      console.error('获取Token余额失败:', error)
-    }
-  }, [supabase])
-
-  const checkUser = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      
+      if (error || !user) {
         router.push('/signin')
         return
       }
-      setUser(user)
-      await fetchTokenBalance()
 
-      // 添加欢迎消息
-      if (messages.length === 0) {
-        setMessages([{
-          id: '1',
-          content: '您好！我是您的高我，准备开始深度对话了吗？您可以分享今天的想法、困惑或任何想要探讨的话题。',
-          isUser: false,
-          timestamp: new Date()
-        }])
-      }
+      setUser(user)
+      await fetchUserConversations(user.id)
+      await fetchChatHistory(user.id)
     } catch (error) {
-      console.error('检查用户状态失败:', error)
+      console.error('认证检查失败:', error)
       router.push('/signin')
     } finally {
       setLoading(false)
     }
-  }, [router, supabase, fetchTokenBalance, messages.length])
+  }
 
-  useEffect(() => {
-    checkUser()
-  }, [checkUser])
+  const fetchUserConversations = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_conversations')
+        .select('total_conversations, free_conversations_used, paid_conversations')
+        .eq('user_id', userId)
+        .single()
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+      if (error) {
+        console.log('对话记录不存在，创建新记录...')
+        // 如果没有记录，创建一个默认记录（100次免费对话）
+        const { data: newRecord, error: insertError } = await supabase
+          .from('user_conversations')
+          .insert([
+            { user_id: userId, total_conversations: 100, free_conversations_used: 0, paid_conversations: 0 }
+          ])
+          .select('total_conversations, free_conversations_used, paid_conversations')
+          .single()
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim() || sending) return
+        if (!insertError) {
+          setConversations({
+            total_conversations: 100,
+            free_conversations_used: 0,
+            paid_conversations: 0,
+            remaining_conversations: 100
+          })
+        } else {
+          console.error('创建对话记录失败:', insertError)
+          // 设置默认值，即使数据库操作失败
+          setConversations({
+            total_conversations: 100,
+            free_conversations_used: 0,
+            paid_conversations: 0,
+            remaining_conversations: 100
+          })
+        }
+      } else {
+        const remaining = data.total_conversations - data.free_conversations_used - data.paid_conversations
+        setConversations({
+          ...data,
+          remaining_conversations: remaining
+        })
+      }
+    } catch (error) {
+      console.error('对话数据获取失败:', error)
+      // 设置默认值
+      setConversations({
+        total_conversations: 100,
+        free_conversations_used: 0,
+        paid_conversations: 0,
+        remaining_conversations: 100
+      })
+    }
+  }
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: inputMessage.trim(),
-      isUser: true,
-      timestamp: new Date()
+  const fetchChatHistory = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('id, message, response, created_at, conversation_number')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true })
+        .limit(50)
+
+      if (!error && data) {
+        setChatHistory(data)
+      }
+    } catch (error) {
+      console.error('聊天记录获取失败:', error)
+      // 不影响主要功能，继续执行
+    }
+  }
+
+  const handleSendMessage = async () => {
+    if ((!message.trim() && !selectedImage) || chatLoading) return
+
+    // 检查对话余额
+    if (!conversations || conversations.remaining_conversations <= 0) {
+      setShowPayment(true)
+      return
     }
 
-    setMessages(prev => [...prev, userMessage])
-    setInputMessage('')
-    setSending(true)
+    setChatLoading(true)
+    const userMessage = message.trim()
+    setMessage('')
+
+    // 处理图片上传
+    let imageUrl = null
+    if (selectedImage) {
+      try {
+        const fileName = `${user.id}/${Date.now()}-${selectedImage.name}`
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('chat-images')
+          .upload(fileName, selectedImage)
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('chat-images')
+            .getPublicUrl(fileName)
+          imageUrl = publicUrl
+        }
+      } catch (error) {
+        console.error('图片上传失败:', error)
+      }
+      setSelectedImage(null)
+    }
+
+    // 添加用户消息到界面
+    const tempMessage: ChatMessage = {
+      id: 'temp-' + Date.now(),
+      message: userMessage || '发送了一张图片',
+      response: '高我正在思考中...',
+      created_at: new Date().toISOString(),
+      conversation_number: 0
+    }
+    setChatHistory(prev => [...prev, tempMessage])
 
     try {
-      // 这里调用AI对话API
-      const response = await fetch('/api/chat/conversation', {
+      // 调用AI API
+      const response = await fetch('/api/chat-new', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: userMessage.content,
+          message: userMessage,
+          imageUrl: imageUrl,
           userId: user.id
         })
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          content: data.reply || '抱歉，我现在无法回应。请稍后再试。',
-          isUser: false,
-          timestamp: new Date()
+      const result = await response.json()
+
+      if (result.success) {
+        // 更新聊天记录
+        const newMessage: ChatMessage = {
+          id: result.messageId,
+          message: userMessage || '发送了一张图片',
+          response: result.response,
+          created_at: new Date().toISOString(),
+          conversation_number: result.conversationNumber
         }
-        setMessages(prev => [...prev, aiMessage])
-        
-        // 更新Token余额
-        if (data.tokensUsed) {
-          setTokenBalance(prev => Math.max(0, prev - data.tokensUsed))
+
+        setChatHistory(prev => prev.map(msg =>
+          msg.id === tempMessage.id ? newMessage : msg
+        ))
+
+        // 更新对话余额
+        if (conversations) {
+          setConversations(prev => prev ? {
+            ...prev,
+            free_conversations_used: prev.free_conversations_used + 1,
+            remaining_conversations: prev.remaining_conversations - 1
+          } : null)
         }
       } else {
-        throw new Error('发送消息失败')
+        // 移除临时消息并显示错误
+        setChatHistory(prev => prev.filter(msg => msg.id !== tempMessage.id))
+
+        // 添加错误消息
+        const errorMessage: ChatMessage = {
+          id: 'error-' + Date.now(),
+          message: userMessage || '发送了一张图片',
+          response: '抱歉，AI服务暂时不可用。错误：' + result.message,
+          created_at: new Date().toISOString(),
+          conversation_number: 0
+        }
+        setChatHistory(prev => [...prev, errorMessage])
       }
     } catch (error) {
       console.error('发送消息失败:', error)
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: '抱歉，发送消息时出现错误。请检查您的网络连接或Token余额。',
-        isUser: false,
-        timestamp: new Date()
+      setChatHistory(prev => prev.filter(msg => msg.id !== tempMessage.id))
+
+      // 添加错误消息
+      const errorMessage: ChatMessage = {
+        id: 'error-' + Date.now(),
+        message: userMessage || '发送了一张图片',
+        response: '抱歉，网络连接出现问题，请稍后重试。',
+        created_at: new Date().toISOString(),
+        conversation_number: 0
       }
-      setMessages(prev => [...prev, errorMessage])
+      setChatHistory(prev => [...prev, errorMessage])
     } finally {
-      setSending(false)
+      setChatLoading(false)
     }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      sendMessage()
+      handleSendMessage()
     }
-  }
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
   }
 
   if (loading) {
     return (
-      <div className={styles.loading}>
-        <div className={styles.spinner}></div>
-        <p>加载中...</p>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        fontSize: '18px'
+      }}>
+        加载中...
+      </div>
+    )
+  }
+
+  if (showPayment) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          maxWidth: '500px',
+          background: 'white',
+          borderRadius: '15px',
+          padding: '30px',
+          textAlign: 'center',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+        }}>
+          <h2 style={{ color: '#333', marginBottom: '20px' }}>💰 Token余额不足</h2>
+          <p style={{ color: '#666', marginBottom: '30px' }}>
+            您的Token已用完，请充值后继续对话
+          </p>
+          
+          <div style={{ marginBottom: '30px' }}>
+            <h3 style={{ color: '#333', marginBottom: '15px' }}>充值套餐</h3>
+            <div style={{ display: 'grid', gap: '15px' }}>
+              <div style={{ 
+                padding: '20px', 
+                border: '2px solid #667eea', 
+                borderRadius: '10px',
+                background: '#f8f9ff'
+              }}>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#667eea' }}>
+                  100 Token - ¥10
+                </div>
+                <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                  约可对话20次
+                </div>
+              </div>
+              <div style={{ 
+                padding: '20px', 
+                border: '2px solid #667eea', 
+                borderRadius: '10px',
+                background: '#f8f9ff'
+              }}>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#667eea' }}>
+                  500 Token - ¥45
+                </div>
+                <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                  约可对话100次
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <button
+              onClick={() => setShowPayment(false)}
+              style={{
+                padding: '12px 24px',
+                background: '#f5f5f5',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              返回聊天
+            </button>
+            <button
+              onClick={() => router.push('/payment')}
+              style={{
+                padding: '12px 24px',
+                background: '#667eea',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              前往充值
+            </button>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className={styles.container}>
-      {/* 星空背景 */}
-      <div className={styles.starryBackground}>
-        <div className={styles.stars}></div>
-        <div className={styles.twinkling}></div>
-      </div>
-
-      {/* 顶部导航 */}
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <h1 className={styles.title}>🌟 与高我对话</h1>
-          <div className={styles.userInfo}>
-            <span className={styles.tokenBalance}>
-              Token: {tokenBalance.toLocaleString()}
-            </span>
-            <button 
-              onClick={() => router.push('/pricing')}
-              className={styles.rechargeBtn}
-            >
-              充值
-            </button>
-            <button onClick={handleSignOut} className={styles.signOutBtn}>
-              退出
-            </button>
+    <div style={{
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    }}>
+      {/* 头部 */}
+      <header style={{
+        background: 'rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(10px)',
+        padding: '15px 20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        color: 'white'
+      }}>
+        <h1 style={{ margin: 0, fontSize: '24px' }}>✨ 与高我对话</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ fontSize: '14px' }}>
+            Token余额: <strong>{tokens?.balance || 0}</strong>
           </div>
+          <button
+            onClick={() => router.push('/dashboard')}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '20px',
+              cursor: 'pointer'
+            }}
+          >
+            控制台
+          </button>
         </div>
       </header>
 
       {/* 聊天区域 */}
-      <main className={styles.chatArea}>
-        <div className={styles.messagesContainer}>
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`${styles.message} ${
-                message.isUser ? styles.userMessage : styles.aiMessage
-              }`}
-            >
-              <div className={styles.messageContent}>
-                <div className={styles.messageText}>{message.content}</div>
-                <div className={styles.messageTime}>
-                  {message.timestamp.toLocaleTimeString()}
-                </div>
-              </div>
+      <div style={{
+        flex: 1,
+        overflow: 'auto',
+        padding: '20px',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {chatHistory.length === 0 ? (
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            textAlign: 'center'
+          }}>
+            <div>
+              <h2 style={{ marginBottom: '10px' }}>🌟 欢迎与高我对话</h2>
+              <p style={{ opacity: 0.8 }}>请输入您的问题，开始深度对话</p>
+              <p style={{ opacity: 0.6, fontSize: '14px', marginTop: '20px' }}>
+                💡 提示：您有 {tokens?.balance || 0} 个免费Token可以使用
+              </p>
             </div>
-          ))}
-          {sending && (
-            <div className={`${styles.message} ${styles.aiMessage}`}>
-              <div className={styles.messageContent}>
-                <div className={styles.typing}>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* 输入区域 */}
-        <div className={styles.inputArea}>
-          <div className={styles.inputContainer}>
-            <textarea
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="说说你今天的想法..."
-              className={styles.messageInput}
-              rows={1}
-              disabled={sending}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!inputMessage.trim() || sending}
-              className={styles.sendButton}
-            >
-              {sending ? '发送中...' : '发送'}
-            </button>
           </div>
-        </div>
-      </main>
+        ) : (
+          <div style={{ flex: 1 }}>
+            {chatHistory.map((chat) => (
+              <div key={chat.id} style={{ marginBottom: '30px' }}>
+                {/* 用户消息 */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  marginBottom: '10px'
+                }}>
+                  <div style={{
+                    background: 'rgba(255,255,255,0.9)',
+                    padding: '12px 16px',
+                    borderRadius: '18px 18px 4px 18px',
+                    maxWidth: '70%',
+                    color: '#333'
+                  }}>
+                    {chat.message}
+                  </div>
+                </div>
+                
+                {/* AI回复 */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'flex-start'
+                }}>
+                  <div style={{
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    padding: '12px 16px',
+                    borderRadius: '18px 18px 18px 4px',
+                    maxWidth: '70%',
+                    color: 'white',
+                    whiteSpace: 'pre-wrap'
+                  }}>
+                    {chat.response}
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+      </div>
 
-      {/* 底部功能栏 */}
-      <nav className={styles.bottomNav}>
-        <button className={`${styles.navItem} ${styles.active}`}>
-          💬 对话
-        </button>
-        <button className={styles.navItem} onClick={() => router.push('/blueprint')}>
-          📋 蓝图
-        </button>
-        <button className={styles.navItem} onClick={() => router.push('/reflection')}>
-          📝 记录
-        </button>
-        <button className={styles.navItem} onClick={() => router.push('/insights')}>
-          💡 收藏
-        </button>
-        <button className={styles.navItem} onClick={() => setShowProfile(true)}>
-          ⚙️ 设置
-        </button>
-      </nav>
+      {/* 输入区域 */}
+      <div style={{
+        background: 'rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(10px)',
+        padding: '20px',
+        borderTop: '1px solid rgba(255,255,255,0.2)'
+      }}>
+        <div style={{
+          display: 'flex',
+          gap: '10px',
+          maxWidth: '800px',
+          margin: '0 auto'
+        }}>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="输入您的问题..."
+            disabled={chatLoading}
+            style={{
+              flex: 1,
+              padding: '12px 16px',
+              borderRadius: '25px',
+              border: 'none',
+              background: 'rgba(255,255,255,0.9)',
+              resize: 'none',
+              minHeight: '50px',
+              maxHeight: '120px',
+              fontSize: '16px',
+              outline: 'none'
+            }}
+            rows={1}
+          />
+          <button
+            onClick={handleSendMessage}
+            disabled={chatLoading || !message.trim()}
+            style={{
+              background: chatLoading ? '#ccc' : '#667eea',
+              color: 'white',
+              border: 'none',
+              borderRadius: '25px',
+              padding: '12px 24px',
+              cursor: chatLoading ? 'not-allowed' : 'pointer',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              minWidth: '80px'
+            }}
+          >
+            {chatLoading ? '...' : '发送'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

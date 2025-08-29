@@ -1,8 +1,6 @@
 {
-  "/test-links/page": "app/test-links/page.js",
-  "/test-reset/page": "app/test-reset/page.js",
-  "/reset-password/confirm/page": "app/reset-password/confirm/page.js",
-  "/test-auth-flow/page": "app/test-auth-flow/page.js",
-  "/debug-center/page": "app/debug-center/page.js",
-  "/reset-password/page": "app/reset-password/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/reset-password/page": "app/reset-password/page.js",
+  "/chat/page": "app/chat/page.js"
 }
