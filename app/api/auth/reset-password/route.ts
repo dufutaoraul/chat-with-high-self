@@ -14,9 +14,12 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient()
 
-    // 发送密码重置邮件
+    // 发送密码重置邮件 - 使用标准的auth/callback路径
+    const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password/confirm`
+    console.log('Password reset redirect URL:', redirectUrl)
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
+      redirectTo: redirectUrl,
     })
 
     if (error) {

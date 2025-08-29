@@ -145,30 +145,68 @@ export default function DebugCenter() {
   const testPasswordReset = async () => {
     try {
       setIsLoading(true)
+      console.log('=== PASSWORD RESET TEST ===')
+      console.log('Testing email:', email)
+      console.log('Current APP_URL:', process.env.NEXT_PUBLIC_APP_URL)
+
       const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       })
-      
+
       const result = await response.json()
-      setTestResults(prev => ({ 
-        ...prev, 
-        passwordReset: { 
+      console.log('Password reset response:', result)
+
+      setTestResults(prev => ({
+        ...prev,
+        passwordReset: {
           status: response.status,
-          ...result 
-        } 
+          timestamp: new Date().toISOString(),
+          requestEmail: email,
+          redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
+          ...result
+        }
       }))
     } catch (error) {
-      setTestResults(prev => ({ 
-        ...prev, 
-        passwordReset: { 
-          error: error instanceof Error ? error.message : String(error) 
-        } 
+      console.error('Password reset test error:', error)
+      setTestResults(prev => ({
+        ...prev,
+        passwordReset: {
+          error: error instanceof Error ? error.message : String(error)
+        }
       }))
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // 测试URL解析
+  const testUrlParsing = () => {
+    const testUrls = [
+      'http://localhost:3005/reset-password/confirm#access_token=test&refresh_token=test',
+      'http://localhost:3005/auth/callback?code=test',
+      'http://localhost:3005/reset-password/confirm?access_token=test&refresh_token=test'
+    ]
+
+    const results = testUrls.map(url => {
+      const urlObj = new URL(url)
+      const hashParams = new URLSearchParams(urlObj.hash.substring(1))
+      const searchParams = urlObj.searchParams
+
+      return {
+        url,
+        hash: urlObj.hash,
+        search: urlObj.search,
+        hashParams: Object.fromEntries(hashParams.entries()),
+        searchParams: Object.fromEntries(searchParams.entries())
+      }
+    })
+
+    setTestResults(prev => ({
+      ...prev,
+      urlParsing: results
+    }))
   }
 
   // 检查登录状态
@@ -342,6 +380,9 @@ export default function DebugCenter() {
           </button>
           <button onClick={testPasswordReset} style={{ padding: '10px', backgroundColor: '#ffc107', color: 'black', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
             测试密码重置
+          </button>
+          <button onClick={testUrlParsing} style={{ padding: '10px', backgroundColor: '#e83e8c', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+            测试URL解析
           </button>
           <button onClick={checkAuthStatus} style={{ padding: '10px', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
             检查登录状态

@@ -15,14 +15,27 @@ function ResetPasswordConfirmContent() {
   const supabase = createClient()
 
   useEffect(() => {
-    // 检查URL中是否有访问令牌
-    const hashParams = new URLSearchParams(window.location.hash.substring(1))
-    const accessToken = hashParams.get('access_token')
-    const refreshToken = hashParams.get('refresh_token')
-    
-    if (!accessToken) {
-      setError('重置链接无效或已过期，请重新申请密码重置')
+    console.log('=== RESET PASSWORD CONFIRM DEBUG ===')
+    console.log('Current URL:', window.location.href)
+
+    // 检查用户是否已经通过auth/callback认证
+    const checkAuthStatus = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        console.log('Current user status:', { user: !!user, error })
+
+        if (error || !user) {
+          setError('重置链接无效或已过期，请重新申请密码重置')
+        } else {
+          console.log('User authenticated, ready for password reset')
+        }
+      } catch (err) {
+        console.error('Auth check error:', err)
+        setError('认证检查失败，请重新申请密码重置')
+      }
     }
+
+    checkAuthStatus()
   }, [])
 
   const handleResetPassword = async (e: React.FormEvent) => {
