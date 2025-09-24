@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
@@ -38,7 +38,7 @@ const plans: Record<string, PlanInfo> = {
   }
 }
 
-export default function PaymentPage() {
+function PaymentPageContent() {
   const [selectedPlan, setSelectedPlan] = useState<PlanInfo | null>(null)
   const [paymentMethod, setPaymentMethod] = useState('wechat')
   const [loading, setLoading] = useState(false)
@@ -270,5 +270,20 @@ export default function PaymentPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p>正在加载...</p>
+        </div>
+      </div>
+    }>
+      <PaymentPageContent />
+    </Suspense>
   )
 }
