@@ -1,449 +1,274 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '../../utils/supabase/client'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
-interface ConversationPackage {
+interface PlanInfo {
   id: string
   name: string
-  conversations: number
   price: number
-  description: string
-  popular?: boolean
+  features: string[]
 }
 
-const conversationPackages: ConversationPackage[] = [
-  {
-    id: 'basic_100',
-    name: '基础包',
-    conversations: 100,
-    price: 9.90,
-    description: '100次对话，适合轻度使用'
+const plans: Record<string, PlanInfo> = {
+  pro: {
+    id: 'pro',
+    name: '专业版',
+    price: 29,
+    features: [
+      '无限对话次数',
+      '高级AI模型',
+      '无限对话历史',
+      '个性化建议',
+      '优先客服支持'
+    ]
   },
-  {
-    id: 'standard_500',
-    name: '标准包',
-    conversations: 500,
-    price: 29.90,
-    description: '500次对话，适合重度使用',
-    popular: true
+  enterprise: {
+    id: 'enterprise',
+    name: '企业版',
+    price: 99,
+    features: [
+      '专业版所有功能',
+      '团队管理功能',
+      '数据分析报告',
+      'API接入支持',
+      '专属客服经理'
+    ]
   }
-]
+}
 
 export default function PaymentPage() {
+  const [selectedPlan, setSelectedPlan] = useState<PlanInfo | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState('wechat')
+  const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [selectedPackage, setSelectedPackage] = useState<ConversationPackage | null>(null)
-  const [showPayment, setShowPayment] = useState(false)
-  const [paymentUrl, setPaymentUrl] = useState('')
-  const [paymentLoading, setPaymentLoading] = useState(false)
-  const [conversations, setConversations] = useState<any>(null)
   const router = useRouter()
-  const supabase = createClient()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    checkAuth()
-  }, [])
+    // 检查用户登录状态
+    const userData = localStorage.getItem('user')
+    if (!userData) {
+      router.push('/signin')
+      return
+    }
+    setUser(JSON.parse(userData))
 
-  const checkAuth = async () => {
+    // 获取选择的计划
+    const planId = searchParams.get('plan')
+    if (planId && plans[planId]) {
+      setSelectedPlan(plans[planId])
+    } else {
+      setSelectedPlan(plans.pro) // 默认专业版
+    }
+  }, [router, searchParams])
+
+  const handlePayment = async () => {
+    if (!selectedPlan || !user) return
+
+    setLoading(true)
     try {
-      const { data: { user }, error } = await supabase.auth.getUser()
-      
-      if (error || !user) {
-        router.push('/signin')
-        return
-      }
+      const session = localStorage.getItem('session')
+      const sessionData = session ? JSON.parse(session) : null
 
-      setUser(user)
-      
-      // 获取用户对话余额
-      const { data: conversationData } = await supabase
-        .from('user_conversations')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
+      const response = await fetch('/api/payment/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionData?.access_token || ''}`
+        },
+        body: JSON.stringify({
+          plan_id: selectedPlan.id,
+          payment_method: paymentMethod,
+          amount: selectedPlan.price
+        })
+      })
 
-      if (conversationData) {
-        setConversations(conversationData)
+      const data = await response.json()
+
+      if (response.ok) {
+        // 模拟支付成功
+        alert('支付成功！感谢您的订阅。')
+        router.push('/chat')
+      } else {
+        throw new Error(data.error || '支付失败')
       }
     } catch (error) {
-      console.error('认证检查失败:', error)
-      router.push('/signin')
+      console.error('Payment error:', error)
+      alert('支付失败，请稍后重试')
     } finally {
       setLoading(false)
     }
   }
 
-  const handlePayment = async (pkg: ConversationPackage) => {
-    if (!user) {
-      router.push('/signin')
-      return
-    }
-
-    setSelectedPackage(pkg)
-    setPaymentLoading(true)
-
-    try {
-      console.log('创建支付订单:', pkg)
-      
-      // 调用支付API创建订单
-      const response = await fetch('/api/payment/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          packageType: pkg.id,
-          userId: user.id
-        })
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        setPaymentUrl(result.paymentUrl)
-        setShowPayment(true)
-        console.log('支付URL生成成功:', result.paymentUrl)
-      } else {
-        console.error('创建支付订单失败:', result.message)
-        alert('创建支付订单失败：' + result.message)
-      }
-
-    } catch (error) {
-      console.error('支付处理失败:', error)
-      alert('支付处理失败，请稍后重试')
-    } finally {
-      setPaymentLoading(false)
-    }
-  }
-
-  const handleDirectPayment = () => {
-    if (paymentUrl) {
-      // 直接跳转到支付页面
-      window.location.href = paymentUrl
-    }
-  }
-
-  if (loading) {
+  if (!selectedPlan || !user) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        background: 'linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%)',
-        color: 'white',
-        fontSize: '18px'
-      }}>
-        加载中...
-      </div>
-    )
-  }
-
-  if (showPayment && selectedPackage) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
-      }}>
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '40px',
-          width: '100%',
-          maxWidth: '500px',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-          textAlign: 'center'
-        }}>
-          <h1 style={{ 
-            color: 'white', 
-            fontSize: '24px', 
-            marginBottom: '20px',
-            fontWeight: '300'
-          }}>
-            💳 完成支付
-          </h1>
-          
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '15px',
-            padding: '20px',
-            marginBottom: '30px'
-          }}>
-            <h3 style={{ color: 'white', marginBottom: '10px' }}>
-              {selectedPackage.name}
-            </h3>
-            <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '10px' }}>
-              {selectedPackage.description}
-            </p>
-            <div style={{ 
-              color: '#4CAF50', 
-              fontSize: '28px', 
-              fontWeight: 'bold' 
-            }}>
-              ¥{selectedPackage.price}
-            </div>
-          </div>
-
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            borderRadius: '10px',
-            padding: '20px',
-            marginBottom: '30px',
-            border: '2px dashed rgba(255, 255, 255, 0.3)'
-          }}>
-            <p style={{ 
-              color: 'rgba(255, 255, 255, 0.8)', 
-              marginBottom: '15px',
-              fontSize: '16px'
-            }}>
-              点击下方按钮跳转到支付宝扫码支付
-            </p>
-            <div style={{
-              color: 'rgba(255, 255, 255, 0.6)',
-              fontSize: '14px',
-              lineHeight: '1.5'
-            }}>
-              • 支持支付宝扫码支付<br/>
-              • 支付成功后自动到账<br/>
-              • 安全可靠，即时生效
-            </div>
-          </div>
-
-          <button
-            onClick={handleDirectPayment}
-            style={{
-              width: '100%',
-              padding: '15px',
-              borderRadius: '10px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              fontSize: '18px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              marginBottom: '15px'
-            }}
-          >
-            🚀 立即支付 ¥{selectedPackage.price}
-          </button>
-
-          <button
-            onClick={() => setShowPayment(false)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              borderRadius: '10px',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              background: 'transparent',
-              color: 'rgba(255, 255, 255, 0.7)',
-              fontSize: '16px',
-              cursor: 'pointer'
-            }}
-          >
-            返回选择套餐
-          </button>
-
-          <div style={{
-            marginTop: '20px',
-            fontSize: '12px',
-            color: 'rgba(255, 255, 255, 0.5)'
-          }}>
-            支付遇到问题？请联系客服
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p>正在加载...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%)',
-      padding: '20px'
-    }}>
-      <div style={{
-        maxWidth: '800px',
-        margin: '0 auto',
-        paddingTop: '50px'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-          <h1 style={{ 
-            color: 'white', 
-            fontSize: '32px', 
-            marginBottom: '15px',
-            fontWeight: '300'
-          }}>
-            💎 选择对话套餐
-          </h1>
-          <p style={{ 
-            color: 'rgba(255, 255, 255, 0.7)', 
-            fontSize: '18px',
-            margin: 0
-          }}>
-            继续您的内在探索之旅
-          </p>
-          
-          {conversations && (
-            <div style={{
-              marginTop: '20px',
-              padding: '15px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              borderRadius: '10px',
-              display: 'inline-block'
-            }}>
-              <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                当前剩余对话次数：
-              </span>
-              <span style={{ 
-                color: '#4CAF50', 
-                fontWeight: 'bold',
-                fontSize: '18px',
-                marginLeft: '10px'
-              }}>
-                {conversations.total_conversations - conversations.free_conversations_used - conversations.paid_conversations}
-              </span>
+    <div className="min-h-screen bg-gray-50">
+      {/* 导航栏 */}
+      <nav className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              ChatWithHighSelf
+            </Link>
+            <div className="text-sm text-gray-600">
+              欢迎，{user.user_metadata?.full_name || user.email}
             </div>
-          )}
+          </div>
         </div>
+      </nav>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '30px',
-          marginBottom: '50px'
-        }}>
-          {conversationPackages.map((pkg) => (
-            <div
-              key={pkg.id}
-              style={{
-                background: pkg.popular 
-                  ? 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%)'
-                  : 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '20px',
-                padding: '30px',
-                border: pkg.popular 
-                  ? '2px solid rgba(102, 126, 234, 0.5)'
-                  : '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                position: 'relative',
-                transition: 'transform 0.3s ease',
-                cursor: 'pointer'
-              }}
-            >
-              {pkg.popular && (
-                <div style={{
-                  position: 'absolute',
-                  top: '-10px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  padding: '5px 20px',
-                  borderRadius: '20px',
-                  fontSize: '12px',
-                  fontWeight: 'bold'
-                }}>
-                  🔥 推荐
+      {/* 主要内容 */}
+      <main className="py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              完成订阅
+            </h1>
+            <p className="text-gray-600">
+              您即将订阅 {selectedPlan.name}，开启更深度的对话体验
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* 订单详情 */}
+            <div className="card">
+              <h2 className="text-xl font-semibold mb-4">订单详情</h2>
+              
+              <div className="border-b border-gray-200 pb-4 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">{selectedPlan.name}</span>
+                  <span className="text-2xl font-bold text-purple-600">
+                    ¥{selectedPlan.price}/月
+                  </span>
                 </div>
-              )}
+              </div>
 
-              <div style={{ textAlign: 'center' }}>
-                <h3 style={{ 
-                  color: 'white', 
-                  fontSize: '24px', 
-                  marginBottom: '10px',
-                  fontWeight: '600'
-                }}>
-                  {pkg.name}
-                </h3>
-                
-                <div style={{ 
-                  color: '#4CAF50', 
-                  fontSize: '36px', 
-                  fontWeight: 'bold',
-                  marginBottom: '10px'
-                }}>
-                  ¥{pkg.price}
+              <div className="space-y-2 mb-4">
+                <h3 className="font-medium text-gray-900">包含功能：</h3>
+                <ul className="space-y-1">
+                  {selectedPlan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center text-sm text-gray-600">
+                      <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex justify-between items-center text-lg font-semibold">
+                  <span>总计</span>
+                  <span className="text-purple-600">¥{selectedPlan.price}</span>
                 </div>
-                
-                <p style={{ 
-                  color: 'rgba(255, 255, 255, 0.7)', 
-                  fontSize: '16px',
-                  marginBottom: '20px',
-                  lineHeight: '1.5'
-                }}>
-                  {pkg.description}
-                </p>
-
-                <div style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  borderRadius: '10px',
-                  padding: '15px',
-                  marginBottom: '25px'
-                }}>
-                  <div style={{ 
-                    color: 'white', 
-                    fontSize: '28px', 
-                    fontWeight: 'bold',
-                    marginBottom: '5px'
-                  }}>
-                    {pkg.conversations}
-                  </div>
-                  <div style={{ 
-                    color: 'rgba(255, 255, 255, 0.7)', 
-                    fontSize: '14px'
-                  }}>
-                    次对话
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handlePayment(pkg)}
-                  disabled={paymentLoading}
-                  style={{
-                    width: '100%',
-                    padding: '15px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: paymentLoading 
-                      ? '#666' 
-                      : pkg.popular 
-                        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                        : 'rgba(255, 255, 255, 0.2)',
-                    color: 'white',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: paymentLoading ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  {paymentLoading ? '处理中...' : '立即购买'}
-                </button>
               </div>
             </div>
-          ))}
-        </div>
 
-        <div style={{
-          textAlign: 'center',
-          color: 'rgba(255, 255, 255, 0.5)',
-          fontSize: '14px',
-          lineHeight: '1.6'
-        }}>
-          <p>• 支付成功后对话次数立即到账</p>
-          <p>• 支持支付宝扫码支付，安全可靠</p>
-          <p>• 对话次数永久有效，无过期时间</p>
+            {/* 支付方式 */}
+            <div className="card">
+              <h2 className="text-xl font-semibold mb-4">选择支付方式</h2>
+              
+              <div className="space-y-3 mb-6">
+                <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="wechat"
+                    checked={paymentMethod === 'wechat'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="mr-3"
+                  />
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-green-500 rounded mr-3 flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">微</span>
+                    </div>
+                    <span>微信支付</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="alipay"
+                    checked={paymentMethod === 'alipay'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="mr-3"
+                  />
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-blue-500 rounded mr-3 flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">支</span>
+                    </div>
+                    <span>支付宝</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="payment"
+                    value="card"
+                    checked={paymentMethod === 'card'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="mr-3"
+                  />
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 bg-gray-500 rounded mr-3 flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">卡</span>
+                    </div>
+                    <span>银行卡</span>
+                  </div>
+                </label>
+              </div>
+
+              <button
+                onClick={handlePayment}
+                disabled={loading}
+                className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? '处理中...' : `支付 ¥${selectedPlan.price}`}
+              </button>
+
+              <div className="mt-4 text-xs text-gray-500 text-center">
+                <p>点击支付即表示您同意我们的</p>
+                <p>
+                  <Link href="/terms" className="text-purple-600 hover:text-purple-500">服务条款</Link>
+                  {' '}和{' '}
+                  <Link href="/privacy" className="text-purple-600 hover:text-purple-500">隐私政策</Link>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 安全提示 */}
+          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <svg className="w-5 h-5 text-blue-500 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <div>
+                <h3 className="font-medium text-blue-900 mb-1">安全保障</h3>
+                <p className="text-sm text-blue-700">
+                  我们使用银行级别的加密技术保护您的支付信息，支持7天无理由退款。
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

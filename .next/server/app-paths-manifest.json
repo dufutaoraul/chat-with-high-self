@@ -1,6 +1,26 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
+  "/api/chat/route": "app/api/chat/route.js",
+  "/api/auth/signin/route": "app/api/auth/signin/route.js",
+  "/api/checkout/providers/zpay/webhook/route": "app/api/checkout/providers/zpay/webhook/route.js",
+  "/api/auth/signup/route": "app/api/auth/signup/route.js",
+  "/api/profile/blueprint/route": "app/api/profile/blueprint/route.js",
+  "/api/profile/route": "app/api/profile/route.js",
+  "/api/checkout/status/[orderId]/route": "app/api/checkout/status/[orderId]/route.js",
+  "/auth/callback/page": "app/auth/callback/page.js",
+  "/auth/page": "app/auth/page.js",
+  "/api/user/tokens/route": "app/api/user/tokens/route.js",
+  "/chat/page": "app/chat/page.js",
+  "/api/checkout/providers/zpay/url/route": "app/api/checkout/providers/zpay/url/route.js",
+  "/page": "app/page.js",
+  "/pricing/page": "app/pricing/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/auth/auth-code-error/page": "app/auth/auth-code-error/page.js",
+  "/payment/page": "app/payment/page.js",
   "/reset-password/page": "app/reset-password/page.js",
-  "/chat/page": "app/chat/page.js"
+  "/profile/page": "app/profile/page.js",
+  "/reset-password/confirm/page": "app/reset-password/confirm/page.js",
+  "/signup/page": "app/signup/page.js",
+  "/signin/page": "app/signin/page.js",
+  "/signup-success/page": "app/signup-success/page.js"
 }

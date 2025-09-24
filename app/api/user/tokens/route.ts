@@ -1,64 +1,102 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '../../../../utils/supabase/server'
+import { supabaseAdmin } from '../../../../utils/supabase/admin'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const authorization = request.headers.get('authorization')
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: '无效的用户令牌' }, { status: 401 })
+    if (!authorization) {
+      return NextResponse.json({ error: '未授权访问' }, { status: 401 })
     }
 
-    // 获取用户Token余额 - 使用新的user_tokens表
-    let { data: tokenData, error: tokenError } = await supabase
-      .from('user_tokens')
-      .select('balance, total_purchased, total_used')
-      .eq('user_id', user.id)
+    const token = authorization.replace('Bearer ', '')
+    
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: '无效的访问令牌' }, { status: 401 })
+    }
+
+    // 获取用户Token余额 - 先尝试profiles表，如果失败则尝试user_profiles表
+    let { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('token_balance, free_tokens_used')
+      .eq('id', user.id)
       .single()
 
-    if (tokenError) {
-      console.log('Token记录不存在，创建新记录...')
-      // 如果用户Token记录不存在，创建一个默认记录
-      const { data: newTokenData, error: createError } = await supabase
-        .from('user_tokens')
+    // 如果profiles表不存在，尝试user_profiles表
+    if (profileError) {
+      const { data: userProfile, error: userProfileError } = await supabaseAdmin
+        .from('user_profiles')
+        .select('token_balance, free_tokens_used')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (!userProfileError) {
+        profile = userProfile
+        profileError = null
+      }
+    }
+
+    if (profileError) {
+      // 如果用户档案不存在，创建一个（优先使用profiles表）
+      const { data: newProfile, error: createError } = await supabaseAdmin
+        .from('profiles')
         .insert({
-          user_id: user.id,
-          balance: 10, // 免费赠送10个Token
-          total_purchased: 0,
-          total_used: 0
+          id: user.id,
+          token_balance: 0,
+          free_tokens_used: 0,
+          free_tokens_limit: 100 // 1元免费试用，约100个Token
         })
-        .select('balance, total_purchased, total_used')
+        .select('token_balance, free_tokens_used')
         .single()
 
+      // 如果profiles表创建失败，尝试user_profiles表
       if (createError) {
-        console.error('创建Token记录失败:', createError)
-        // 即使创建失败，也返回默认值
+        const { data: newUserProfile, error: createUserError } = await supabaseAdmin
+          .from('user_profiles')
+          .insert({
+            user_id: user.id,
+            token_balance: 0,
+            free_tokens_used: 0,
+            free_tokens_limit: 100
+          })
+          .select('token_balance, free_tokens_used')
+          .single()
+
+        if (createUserError) {
+          return NextResponse.json({ error: '创建用户档案失败' }, { status: 500 })
+        }
+
         return NextResponse.json({
-          tokenBalance: 10,
-          freeTokensUsed: 0,
-          freeTokensLimit: 10,
-          freeTokensRemaining: 10
+          tokenBalance: newUserProfile.token_balance || 0,
+          freeTokensUsed: newUserProfile.free_tokens_used || 0,
+          freeTokensLimit: 100,
+          freeTokensRemaining: 100 - (newUserProfile.free_tokens_used || 0)
         })
       }
 
-      tokenData = newTokenData
+      if (createError) {
+        return NextResponse.json({ error: '创建用户档案失败' }, { status: 500 })
+      }
+
+      return NextResponse.json({
+        tokenBalance: newProfile.token_balance || 0,
+        freeTokensUsed: newProfile.free_tokens_used || 0,
+        freeTokensLimit: 100,
+        freeTokensRemaining: 100 - (newProfile.free_tokens_used || 0)
+      })
     }
 
-    // 计算免费Token使用情况（前10个Token为免费）
-    const freeTokensLimit = 10
-    const totalUsed = tokenData?.total_used || 0
-    const freeTokensUsed = Math.min(totalUsed, freeTokensLimit)
+    const freeTokensLimit = 100 // 1元免费试用
+    const freeTokensUsed = profile?.free_tokens_used || 0
     const freeTokensRemaining = Math.max(0, freeTokensLimit - freeTokensUsed)
 
     return NextResponse.json({
-      tokenBalance: tokenData?.balance || 0,
+      tokenBalance: profile?.token_balance || 0,
       freeTokensUsed,
       freeTokensLimit,
-      freeTokensRemaining,
-      totalPurchased: tokenData?.total_purchased || 0,
-      totalUsed: tokenData?.total_used || 0
+      freeTokensRemaining
     })
 
   } catch (error) {
@@ -69,67 +107,89 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: '无效的用户令牌' }, { status: 401 })
-    }
-
     const { tokensUsed } = await request.json()
+    const authorization = request.headers.get('authorization')
+
+    if (!authorization) {
+      return NextResponse.json({ error: '未授权访问' }, { status: 401 })
+    }
 
     if (!tokensUsed || tokensUsed <= 0) {
       return NextResponse.json({ error: '无效的Token消耗量' }, { status: 400 })
     }
 
-    // 获取用户当前Token状态
-    const { data: tokenData, error: getError } = await supabase
-      .from('user_tokens')
-      .select('balance, total_used')
-      .eq('user_id', user.id)
-      .single()
-
-    if (getError || !tokenData) {
-      return NextResponse.json({ error: '获取用户Token信息失败' }, { status: 500 })
+    const token = authorization.replace('Bearer ', '')
+    
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: '无效的访问令牌' }, { status: 401 })
     }
 
-    const currentBalance = tokenData.balance || 0
-    const currentTotalUsed = tokenData.total_used || 0
+    // 获取用户当前Token状态
+    const { data: profile, error: getError } = await supabaseAdmin
+      .from('profiles')
+      .select('token_balance, free_tokens_used')
+      .eq('id', user.id)
+      .single()
 
-    // 检查余额是否足够
-    if (currentBalance < tokensUsed) {
-      return NextResponse.json({
-        error: 'Token余额不足',
-        required: tokensUsed,
-        available: currentBalance,
-        needPayment: true
-      }, { status: 402 })
+    if (getError || !profile) {
+      return NextResponse.json({ error: '获取用户档案失败' }, { status: 500 })
+    }
+
+    const freeTokensLimit = 100
+    const currentFreeUsed = profile.free_tokens_used || 0
+    const currentBalance = profile.token_balance || 0
+    const freeTokensRemaining = Math.max(0, freeTokensLimit - currentFreeUsed)
+
+    let newFreeUsed = currentFreeUsed
+    let newBalance = currentBalance
+    let usedFromFree = 0
+    let usedFromPaid = 0
+
+    // 优先使用免费Token
+    if (freeTokensRemaining > 0) {
+      usedFromFree = Math.min(tokensUsed, freeTokensRemaining)
+      newFreeUsed = currentFreeUsed + usedFromFree
+    }
+
+    // 剩余部分使用付费Token
+    const remainingToUse = tokensUsed - usedFromFree
+    if (remainingToUse > 0) {
+      if (currentBalance < remainingToUse) {
+        return NextResponse.json({ 
+          error: 'Token余额不足',
+          required: remainingToUse,
+          available: currentBalance,
+          needPayment: true
+        }, { status: 402 })
+      }
+      usedFromPaid = remainingToUse
+      newBalance = currentBalance - remainingToUse
     }
 
     // 更新用户Token状态
-    const newBalance = currentBalance - tokensUsed
-    const newTotalUsed = currentTotalUsed + tokensUsed
-
-    const { error: updateError } = await supabase
-      .from('user_tokens')
+    const { error: updateError } = await supabaseAdmin
+      .from('profiles')
       .update({
-        balance: newBalance,
-        total_used: newTotalUsed,
+        token_balance: newBalance,
+        free_tokens_used: newFreeUsed,
         updated_at: new Date().toISOString()
       })
-      .eq('user_id', user.id)
+      .eq('id', user.id)
 
     if (updateError) {
-      console.error('更新Token余额失败:', updateError)
       return NextResponse.json({ error: '更新Token余额失败' }, { status: 500 })
     }
 
     return NextResponse.json({
       success: true,
       tokensUsed,
+      usedFromFree,
+      usedFromPaid,
       newBalance,
-      newTotalUsed
+      newFreeUsed,
+      freeTokensRemaining: Math.max(0, freeTokensLimit - newFreeUsed)
     })
 
   } catch (error) {

@@ -28,7 +28,16 @@
       "Read(/C:\\Users\\杜富陶\\Downloads/**)",
       "Read(/C:\\Users\\杜富陶\\Downloads/**)",
       "Read(/C:\\Users\\杜富陶\\Downloads/**)",
-      "Read(/C:\\Users\\杜富陶\\Downloads/**)"
+      "Read(/C:\\Users\\杜富陶\\Downloads/**)",
+      "Bash(findstr:*)",
+      "Bash(npm install)",
+      "Bash(where vercel)",
+      "Bash(npm install:*)",
+      "Bash(vercel:*)",
+      "Bash(dir:*)",
+      "WebFetch(domain:github.com)",
+      "Read(//c/Users/杜富陶/Downloads/**)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": [],

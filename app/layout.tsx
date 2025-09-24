@@ -5,15 +5,8 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: '与高我对话 - ChatWithHighSelf',
-  description: '通过AI技术与你的高我进行深度对话，探索内在智慧，获得人生指导',
-  keywords: '高我对话,AI对话,人生指导,内在智慧,自我探索',
-  authors: [{ name: 'DuFuTao' }],
-}
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
+  title: 'ChatWithHighSelf - AI智能对话平台',
+  description: '与更高维度的自己对话，获得人生指导和智慧启发',
 }
 
 export default function RootLayout({
@@ -24,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={inter.className}>
-        {children}
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+          {children}
+        </div>
       </body>
     </html>
   )

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import styles from '../styles/ProfileManager.module.css'
 
 export default function ProfileManager({ isOpen, onClose, onComplete }) {
@@ -51,7 +51,7 @@ export default function ProfileManager({ isOpen, onClose, onComplete }) {
 
       return () => clearTimeout(timer)
     }
-  }, [formData, isOpen, loading, autoSave])
+  }, [formData, isOpen, loading])
 
   const loadExistingData = async () => {
     setLoading(true)
@@ -94,7 +94,7 @@ export default function ProfileManager({ isOpen, onClose, onComplete }) {
     }
   }
 
-  const autoSave = useCallback(async () => {
+  const autoSave = async () => {
     if (saving) return
     
     // 检查是否有数据需要保存
@@ -137,7 +137,7 @@ export default function ProfileManager({ isOpen, onClose, onComplete }) {
     } finally {
       setSaving(false)
     }
-  }, [formData, saving])
+  }
 
   const handleInputChange = (field, value) => {
     console.log(`更新字段 ${field}:`, value)

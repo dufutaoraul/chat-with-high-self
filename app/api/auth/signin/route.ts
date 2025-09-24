@@ -4,13 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json()
-
-    console.log('=== LOGIN API DEBUG ===')
-    console.log('Email:', email)
-    console.log('Password length:', password?.length || 0)
-
+    
     if (!email || !password) {
-      console.log('Missing email or password')
       return NextResponse.json(
         { success: false, message: '邮箱和密码不能为空' },
         { status: 400 }
@@ -48,20 +43,12 @@ export async function POST(request: NextRequest) {
     )
 
     // 使用 Supabase 进行登录
-    console.log('Attempting Supabase login...')
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    console.log('Supabase login result:', {
-      hasUser: !!data?.user,
-      hasSession: !!data?.session,
-      error: error?.message || 'No error'
-    })
-
     if (error) {
-      console.log('Login error details:', error)
       // 将英文错误信息转换为中文
       let chineseMessage = '登录失败，请重试'
       
@@ -82,15 +69,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 登录成功，返回用户信息
-    console.log('Login successful, returning success response')
-    const successResponse = {
+    return NextResponse.json({
       success: true,
       message: '登录成功',
       user: data.user,
       redirectTo: '/dashboard'
-    }
-    console.log('Success response:', successResponse)
-    return NextResponse.json(successResponse)
+    })
 
   } catch (error) {
     console.error('登录错误:', error)

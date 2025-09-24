@@ -2,9 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { createClient } from '../../utils/supabase/client'
-import styles from './reset-password.module.css'
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('')
@@ -12,9 +10,7 @@ export default function ResetPassword() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
-  const router = useRouter()
-
-  // 使用主数据库（用户认证数据库）
+  
   const supabase = createClient()
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -24,136 +20,89 @@ export default function ResetPassword() {
     setLoading(true)
 
     try {
-      console.log('发送重置邮件到:', email)
-
-      // 使用环境变量中配置的应用URL，确保重定向到正确的域名
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.dufutao.asia'
-      const redirectUrl = `${appUrl}/reset-password/confirm`
-
-      console.log('重定向URL:', redirectUrl)
-
-      const { error, data } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback`
       })
-
-      console.log('重置密码结果:', { error: error?.message, success: !error })
 
       if (error) {
         throw error
       }
 
       setEmailSent(true)
-      setMessage('重置密码的邮件已发送到您的邮箱，请查收并按照邮件中的指示操作。')
+      setMessage('重置密码的邮件已发送到您的邮箱，请查收。')
     } catch (error: any) {
       console.error('发送重置邮件失败:', error)
-      
-      // 转换为中文错误信息
-      let chineseMessage = '发送重置邮件失败，请重试'
-      
-      if (error.message.includes('User not found')) {
-        chineseMessage = '该邮箱地址未注册，请检查邮箱地址或先注册账号'
-      } else if (error.message.includes('Email rate limit exceeded')) {
-        chineseMessage = '发送邮件过于频繁，请稍后再试'
-      } else if (error.message.includes('Invalid email')) {
-        chineseMessage = '邮箱地址格式不正确'
-      }
-      
-      setError(chineseMessage)
+      setError('发送重置邮件失败，请重试')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className={styles.container}>
-      {/* 星空背景动画 */}
-      <div className={styles.backgroundAnimation}>
-        <div className={styles.stars}></div>
-        <div className={styles.twinkling}></div>
-        <div className={styles.clouds}></div>
-      </div>
-
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>重置密码</h1>
-          <p className={styles.subtitle}>
-            {emailSent ? '邮件已发送' : '输入您的邮箱地址，我们将发送重置密码的链接'}
-          </p>
-        </div>
-
-        {!emailSent ? (
-          <form onSubmit={handleResetPassword} className={styles.form}>
-            {error && (
-              <div className={styles.error}>
-                {error}
-              </div>
-            )}
-            
-            <div className={styles.inputGroup}>
-              <label className={styles.label} htmlFor="email">
-                邮箱地址
-              </label>
-              <input 
-                id="email" 
-                type="email" 
-                className={styles.input}
-                placeholder="请输入您的邮箱地址" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required 
-              />
-            </div>
-
-            <button 
-              type="submit"
-              className={styles.submitButton}
-              disabled={loading}
-            >
-              {loading ? '发送中...' : '发送重置邮件'}
-            </button>
-
-            <div className={styles.footer}>
-              <Link href="/signin" className={styles.link}>
-                返回登录
-              </Link>
-            </div>
-          </form>
-        ) : (
-          <div className={styles.successMessage}>
-            {message && (
-              <div className={styles.success}>
-                {message}
-              </div>
-            )}
-            
-            <div className={styles.instructions}>
-              <h3>接下来的步骤：</h3>
-              <ol>
-                <li>检查您的邮箱（包括垃圾邮件文件夹）</li>
-                <li>点击邮件中的重置密码链接</li>
-                <li>设置新密码</li>
-                <li>使用新密码登录</li>
-              </ol>
-            </div>
-
-            <div className={styles.footer}>
-              <Link href="/signin" className={styles.link}>
-                返回登录
-              </Link>
-              <span className={styles.separator}>|</span>
-              <button 
-                onClick={() => {
-                  setEmailSent(false)
-                  setMessage(null)
-                  setError(null)
-                }}
-                className={styles.resendLink}
-              >
-                重新发送邮件
-              </button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center p-5">
+      <div className="w-full max-w-md">
+        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border border-white/20">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+              重置密码
+            </h1>
+            <p className="text-white/70">
+              {emailSent ? '邮件已发送' : '输入您的邮箱地址'}
+            </p>
           </div>
-        )}
+
+          {!emailSent ? (
+            <form onSubmit={handleResetPassword} className="space-y-6">
+              {error && (
+                <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+              
+              <div>
+                <label className="block text-white/90 text-sm font-medium mb-2">
+                  邮箱地址
+                </label>
+                <input 
+                  type="email" 
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="请输入您的邮箱地址" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required 
+                />
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-blue-600 disabled:opacity-50 transition-all"
+                disabled={loading}
+              >
+                {loading ? '发送中...' : '发送重置邮件'}
+              </button>
+
+              <div className="text-center">
+                <Link href="/signin" className="text-blue-400 hover:text-blue-300 text-sm">
+                  返回登录
+                </Link>
+              </div>
+            </form>
+          ) : (
+            <div className="text-center">
+              {message && (
+                <div className="bg-green-500/20 border border-green-500/50 text-green-200 p-3 rounded-lg text-sm mb-6">
+                  {message}
+                </div>
+              )}
+              
+              <div className="text-center">
+                <Link href="/signin" className="text-blue-400 hover:text-blue-300 text-sm">
+                  返回登录
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

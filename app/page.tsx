@@ -1,134 +1,155 @@
-'use client'
-
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '../utils/supabase/client'
-import styles from './page.module.css'
-import './starry-background.css'
+import Link from 'next/link'
 
 export default function HomePage() {
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-  const supabase = createClient()
-
-  const checkUser = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-    } catch (error) {
-      console.error('检查用户状态失败:', error)
-      setUser(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [supabase])
-
-  useEffect(() => {
-    // 检查是否是密码重置的访问
-    if (typeof window !== 'undefined') {
-      const hash = window.location.hash
-      if (hash.includes('access_token=') && hash.includes('type=recovery')) {
-        // 将用户重定向到密码重置确认页面，并保留hash参数
-        router.push(`/reset-password/confirm${hash}`)
-        return
-      }
-    }
-
-    checkUser()
-  }, [router, checkUser])
-
-  const handleStartChat = () => {
-    // 直接使用已经检查过的用户状态，避免重复检查造成闪烁
-    if (user) {
-      // 已登录用户直接进入聊天界面
-      router.push('/chat')
-    } else {
-      // 未登录用户跳转到登录页面
-      router.push('/signin')
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className={styles.loading}>
-        <div className={styles.spinner}></div>
-        <p>加载中...</p>
-      </div>
-    )
-  }
-
-  // 所有用户都看到星空首页
   return (
-    <div className={styles.appContainer}>
-      {/* 新的炫酷星空背景 */}
-      <div className="starry-container">
-        <div className="deep-space"></div>
-        <div className="stars-large"></div>
-        <div className="stars-medium"></div>
-        <div className="stars-small"></div>
-        <div className="nebula-effect"></div>
-        <div className="shooting-stars">
-          <div className="shooting-star"></div>
-          <div className="shooting-star"></div>
-          <div className="shooting-star"></div>
-        </div>
-      </div>
-      
-      <main className={styles.main}>
-        <div className={styles.hero}>
-          <div className={styles.logoContainer}>
-            <div className={styles.logo}>
-              <div className={styles.logoGlow}></div>
-              <div className={styles.logoRing1}></div>
-              <div className={styles.logoRing2}></div>
-              <div className={styles.logoRing3}></div>
-              <div className={styles.logoCore}>🌟</div>
+    <div className="min-h-screen">
+      {/* 导航栏 */}
+      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                ChatWithHighSelf
+              </h1>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link href="/signin" className="btn-secondary">
+                登录
+              </Link>
+              <Link href="/signup" className="btn-primary">
+                注册
+              </Link>
             </div>
           </div>
-          
-          <h1 className={styles.title}>与高我对话</h1>
-          <h2 className={styles.subtitle}>探索内在智慧的旅程</h2>
-          <p className={styles.description}>
-            通过深度对话，发现你内在的智慧与力量。<br />
-            规划人生蓝图，记录成长轨迹，收藏珍贵洞察。
-          </p>
-          
-          <div className={styles.authButtons}>
-            <button 
-              className={styles.authButton}
-              onClick={handleStartChat}
-            >
-              <span className={styles.buttonIcon}>✨</span>
-              {user ? '进入对话' : '开始对话'}
-            </button>
-            {user && (
-              <div className={styles.userWelcome}>
-                欢迎回来，{user.email}
+        </div>
+      </nav>
+
+      {/* 主要内容 */}
+      <main>
+        {/* Hero Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+              与更高维度的
+              <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                自己
+              </span>
+              对话
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              通过AI智能对话，获得人生指导、智慧启发和内在成长。
+              探索你的潜能，发现更好的自己。
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/signup" className="btn-primary text-lg px-8 py-4">
+                开始对话
+              </Link>
+              <Link href="/pricing" className="btn-secondary text-lg px-8 py-4">
+                查看定价
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* 功能特色 */}
+        <section className="py-16 px-4 bg-white/50">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+              为什么选择 ChatWithHighSelf？
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="card text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3">智能洞察</h3>
+                <p className="text-gray-600">
+                  基于先进AI技术，提供深度的自我分析和人生指导
+                </p>
               </div>
-            )}
+              
+              <div className="card text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3">隐私安全</h3>
+                <p className="text-gray-600">
+                  端到端加密，确保您的对话内容完全私密安全
+                </p>
+              </div>
+              
+              <div className="card text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-3">即时响应</h3>
+                <p className="text-gray-600">
+                  24/7随时可用，即时获得智慧指导和人生建议
+                </p>
+              </div>
+            </div>
           </div>
-          
-          <div className={styles.features}>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>💬</span>
-              深度对话
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              准备好开始您的内在探索之旅了吗？
+            </h2>
+            <p className="text-lg text-gray-600 mb-8">
+              加入数千名用户，通过AI对话发现更好的自己
+            </p>
+            <Link href="/signup" className="btn-primary text-lg px-8 py-4">
+              立即开始免费体验
+            </Link>
+          </div>
+        </section>
+      </main>
+
+      {/* 页脚 */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">ChatWithHighSelf</h3>
+              <p className="text-gray-400">
+                与更高维度的自己对话，获得人生智慧和指导。
+              </p>
             </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>📋</span>
-              人生蓝图
+            <div>
+              <h4 className="font-semibold mb-4">产品</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/pricing" className="hover:text-white">定价</Link></li>
+                <li><Link href="/features" className="hover:text-white">功能</Link></li>
+              </ul>
             </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>📝</span>
-              反思记录
+            <div>
+              <h4 className="font-semibold mb-4">支持</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/help" className="hover:text-white">帮助中心</Link></li>
+                <li><Link href="/contact" className="hover:text-white">联系我们</Link></li>
+              </ul>
             </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>💡</span>
-              洞察收藏
+            <div>
+              <h4 className="font-semibold mb-4">法律</h4>
+              <ul className="space-y-2 text-gray-400">
+                <li><Link href="/privacy" className="hover:text-white">隐私政策</Link></li>
+                <li><Link href="/terms" className="hover:text-white">服务条款</Link></li>
+              </ul>
             </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 ChatWithHighSelf. All rights reserved.</p>
           </div>
         </div>
-      </main>
+      </footer>
     </div>
   )
 }
